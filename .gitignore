@@ -1,0 +1,24 @@
+*.code-workspace
+
+#development
+**/_templates_
+
+# dependencies
+/node_modules
+/node_modules.zip
+
+#private
+/config
+
+#logs
+/logs
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+*.template.js
