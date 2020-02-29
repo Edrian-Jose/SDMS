@@ -1,25 +1,17 @@
-const config = require("config");
 const Joi = require("joi");
 const mongoose = require("mongoose");
 const moment = require("moment");
-
-const {
-  firstname,
-  name,
-  joi_name,
-  joi_firstname
-} = require("./_template_schemas.js");
+const { uniqueString, joi_unique_string } = require("./_template_schemas.js");
 
 const teacherSchema = {
   name: {
-    first: firstname,
-    middle: name,
-    last: name
+    first: uniqueString,
+    middle: uniqueString,
+    last: uniqueString
   },
   birthday: {
     type: Date,
-    required: true,
-    max: moment().subtract(10, "years")
+    required: true
   },
   employee_number: {
     type: Number,
@@ -56,9 +48,9 @@ const Teacher = mongoose.Model("Teacher", teacherSchema);
 function validateTeacher(teacher) {
   const schema = {
     name: Joi.object({
-      first: joi_firstname,
-      middle: joi_name,
-      last: joi_name
+      first: joi_unique_string,
+      middle: joi_unique_string,
+      last: joi_unique_string
     }),
     birthday: Joi.date()
       .required()

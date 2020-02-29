@@ -1,33 +1,32 @@
 const Joi = require("joi");
 
-module.exports.firstname = {
+module.exports.uniqueString = {
   type: String,
   uppercase: true,
   trim: true,
   required: true,
-  minlength: 2,
-  maxlength: 50
+  minlength: 2
 };
 
-module.exports.name = {
+module.exports.string = {
   type: String,
   uppercase: true,
   trim: true,
   required: true,
-  minlength: 2,
-  maxlength: 20
+  minlength: 2
 };
 
-module.exports.joi_name = Joi.string()
+module.exports.joi_string = Joi.string()
   .required()
   .uppercase()
   .trim()
-  .min(2)
-  .max(20);
+  .min(2);
 
-module.exports.joi_firstname = Joi.string()
-  .required()
-  .uppercase()
-  .trim()
-  .min(2)
-  .max(50);
+const school = {
+  name: {
+    type: String,
+    required: true,
+    default: "Pres. Sergio Osmeña Junior High School",
+    minlength: 5
+  }
+};
