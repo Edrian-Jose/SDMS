@@ -1,6 +1,55 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
 
+const sectionSchema = {
+  isRegular: {
+    type: Boolean,
+    default: true
+  },
+  school_year: {
+    start: {
+      type: Number,
+      required: true
+    },
+    end: {
+      type: Number,
+      required: true
+    }
+  },
+  grade_level: {
+    type: Number,
+    required: true,
+    min: 7,
+    max: 10
+  },
+  number: {
+    type: Number,
+    min: 1,
+    max: 15
+  },
+  name: {
+    type: String,
+    optional: true,
+    trim: true,
+    minlength: 2
+  },
+  adviser_id: mongoose.Schema.Types.ObjectId,
+  subject_teachers: [
+    {
+      learning_area: {
+        type: String,
+        required: true,
+        trim: true,
+        enum: ["Filipino"]
+        //TODO: add the other learning areas options to schema
+      },
+      id: mongoose.Schema.Types.ObjectId
+    }
+  ],
+  students: [mongoose.Schema.Types.ObjectId]
+};
+
+const Section = mongoose.Model("Section", sectionSchema);
 function validateSection(section) {
   const schema = {
     isRegular: Joi.boolean().default(true),
@@ -8,7 +57,7 @@ function validateSection(section) {
       start: Joi.number().required(),
       end: Joi.number().required()
     }),
-    year_level: Joi.number()
+    grade_level: Joi.number()
       .required()
       .min(7)
       .max(10),
@@ -20,7 +69,7 @@ function validateSection(section) {
       .optional()
       .trim()
       .min(2),
-    adviser_id: Joi.objectId,
+    adviser_id: Joi.objectId(),
     subject_teachers: Joi.array().items(
       Joi.object({
         learning_area: Joi.string()
@@ -28,10 +77,10 @@ function validateSection(section) {
           .trim()
           .valid("Filipino"),
         //TODO: add the other learning areas options to Joi validation
-        id: Joi.objectId
+        id: Joi.objectId()
       })
     ),
-    students: Joi.array().items(mongoose.Schema.Types.ObjectId)
+    students: Joi.array().items(Joi.objectId())
   };
 
   return Joi.validate(section, schema);

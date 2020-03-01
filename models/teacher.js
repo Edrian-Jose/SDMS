@@ -38,7 +38,12 @@ const teacherSchema = {
         ],
         trim: true
       },
-      authorization_level: Number
+      sections: [
+        {
+          grade: Number,
+          section: String
+        }
+      ]
     }
   ]
 };
