@@ -12,7 +12,9 @@ router.post("/", async (req, res) => {
   if (enrolled)
     return res.status(400).send("Bad request, enrollee is already enrolled");
 
-  res.send("Hello");
+  const enrollee = new Enrollee(req.body);
+  await enrollee.save();
+  res.send(enrollee);
 });
 
 router.delete("/:lrn", async (req, res) => {
@@ -22,7 +24,8 @@ router.delete("/:lrn", async (req, res) => {
       .status(400)
       .send("Bad request, deleting enrollee is not enrolled");
 
-  res.status(200).send("req");
+  enrolled.remove();
+  res.send(enrolled);
 });
 
 module.exports = router;

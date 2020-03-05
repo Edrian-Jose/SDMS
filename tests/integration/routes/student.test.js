@@ -1,7 +1,6 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
 const { Student } = require("../../../models/student");
-const { Enrollee } = require("../../../models/enrollee");
 const { Teacher } = require("../../../models/teacher");
 
 describe("POST /api/students", () => {
@@ -90,10 +89,12 @@ describe("POST /api/students", () => {
     expect(res.status).toBe(400);
   });
 
-  //if user is unauthenticated /
-  //if user is unauthorized /
-  //if student object is invalid /
-  //if lrn is already registered /
-  //if name already registered /
-  //TODO: create student if successfull execution
+  it("should return created student if successful", async () => {
+    token = new Teacher(teacher).generateAuthToken();
+    const res = await request(server)
+      .post("/api/students")
+      .set("x-auth-token", token)
+      .send(student);
+    expect(res.body.lrn).toBe(student.lrn);
+  });
 });

@@ -25,6 +25,11 @@ const enrolleeSchema = new mongoose.Schema({
   classification: {
     grade_level: Number,
     section: Number
+  },
+  dataProcessed: {
+    type: Boolean,
+    required: true,
+    default: false
   }
 });
 
@@ -49,7 +54,8 @@ function validateEnrollee(enrollee) {
     classification: Joi.object({
       grade_level: Joi.number(),
       section: Joi.number()
-    })
+    }),
+    dataProcessed: Joi.boolean().default(false)
   };
   return Joi.validate(enrollee, schema);
 }

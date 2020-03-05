@@ -74,20 +74,14 @@ describe("POST /api/enroll", () => {
     expect(res.status).toBe(400);
   });
 
-  it("should return 200 if enrollee is valid", async () => {
+  it("should return enrolled student if enrollee is valid", async () => {
     token = new Teacher(teacher).generateAuthToken();
     const res = await request(server)
       .post("/api/enroll")
       .set("x-auth-token", token)
       .send(enrollee);
-    expect(res.status).toBe(200);
+    expect(res.body.lrn).toBe(enrollee.lrn);
   });
-
-  //when unauthenticated
-  //when unauthorized
-  // when enrollee object is not valid
-  // when enrollee object is already in the database
-  // when enrolle object is valid and not in the database
 });
 
 describe("DELETE /api/enrollee", () => {
@@ -149,19 +143,12 @@ describe("DELETE /api/enrollee", () => {
 
     expect(res.status).toBe(400);
   });
-  it("should return 200 if deleting enrollee is successful", async () => {
+  it("should return deleted enrollee is successful", async () => {
     token = new Teacher(teacher).generateAuthToken();
     const res = await request(server)
       .delete("/api/enroll/" + enrollee.lrn)
       .set("x-auth-token", token);
 
-    expect(res.status).toBe(200);
+    expect(res.body.lrn).toBe(enrollee.lrn);
   });
-
-  //when unauthenticated /
-  //when unauthorized /
-  //TODO: when enrollee object is invalid
-  // when deleting enrollee object is not in the database /
-  // when deleting enrolle object is  in the database /
-  //TODO: enroll person if successfull execution
 });

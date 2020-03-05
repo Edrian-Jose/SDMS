@@ -22,7 +22,9 @@ router.post("/", async (req, res) => {
   if (duplicateStudent)
     return res.status(400).send("Bad request, name already registered");
 
-  res.status(200).send("req");
+  const student = new Student(req.body);
+  await student.save();
+  res.send(student);
 });
 
 router.get("/:id", async (req, res) => {
