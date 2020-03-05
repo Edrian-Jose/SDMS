@@ -4,9 +4,9 @@ const moment = require("moment");
 
 const { uniqueString, string, joi_string } = require("./_template_schemas.js");
 
-const studentSchema = {
+const studentSchema = new mongoose.Schema({
   lrn: {
-    type: number,
+    type: Number,
     unique: true,
     max: 999999999999,
     min: 1,
@@ -41,42 +41,67 @@ const studentSchema = {
     type: Boolean,
     optional: true
   },
-  religion: string,
+  religion: {
+    type: String,
+    uppercase: true,
+    default: "UNSPECIFIED",
+    trim: true,
+    required: true,
+    minlength: 2
+  },
   address: {
     house: {
       type: String,
+      default: "UNSPECIFIED",
       required: true,
       trim: true,
       minlength: 2
     },
     barangay: {
       type: String,
+      default: "UNSPECIFIED",
       trim: true,
       required: true
     },
     municipality: {
       type: String,
+      default: "UNSPECIFIED",
       trim: true,
       required: true
     },
     province: {
-      type: string,
+      type: String,
+      default: "UNSPECIFIED",
       required: true,
       trim: true
     }
   },
   parents_name: {
-    father: string,
-    mothers_maiden: string
+    father: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      default: "UNSPECIFIED",
+      required: true,
+      minlength: 2
+    },
+    mothers_maiden: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      default: "UNSPECIFIED",
+      required: true,
+      minlength: 2
+    }
   },
   guardian: {
     name: string,
     relationship: string,
     contact: Number
   }
-};
+});
 
-const Student = mongoose.Model("Student", studentSchema);
+const Student = mongoose.model("Student", studentSchema);
 
 function validateStudent(student) {
   const schema = {
@@ -99,29 +124,37 @@ function validateStudent(student) {
       .valid("MALE", "FEMALE"),
     birthdate: Joi.date()
       .required()
-      .max(moment().subtract(10, "years")),
+      .max(
+        moment()
+          .subtract(10, "years")
+          .toJSON()
+      ),
     mother_tongue: joi_string,
     ip: Joi.boolean().optional(),
-    religion: joi_string,
+    religion: Joi.string()
+      .uppercase()
+      .trim()
+      .min(2),
     address: Joi.object({
       house: Joi.string()
-        .required()
         .trim()
         .min(2),
-      barangay: Joi.string()
-        .trim()
-        .required(),
-      municipality: Joi.string()
-        .trim()
-        .required(),
-      province: Joi.string()
-        .required()
-        .trim()
+      barangay: Joi.string().trim(),
+      municipality: Joi.string().trim(),
+      province: Joi.string().trim()
     }),
     parents_name: Joi.object({
-      father: joi_string,
-      mothers_maiden: joi_string
-    }),
+      father: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2),
+      mothers_maiden: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2)
+    })
+      .required()
+      .or("father", "mothers_maiden"),
     guardian: Joi.object({
       name: joi_string,
       relationship: joi_string,

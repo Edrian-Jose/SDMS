@@ -1,9 +1,11 @@
 const Joi = require("joi");
+const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const moment = require("moment");
+const config = require("config");
 const { uniqueString, joi_unique_string } = require("./_template_schemas.js");
 
-const teacherSchema = {
+const teacherSchema = new mongoose.Schema({
   name: {
     first: uniqueString,
     middle: uniqueString,
@@ -24,7 +26,7 @@ const teacherSchema = {
     minlength: 7,
     required: true
   },
-  assignment: [
+  assignments: [
     {
       category: {
         type: String,
@@ -46,9 +48,36 @@ const teacherSchema = {
       ]
     }
   ]
+});
+
+teacherSchema.methods.generateAuthToken = function() {
+  const unsignedObj = {
+    _id: this._id,
+    roles: this.assignments.map(assignment => {
+      switch (assignment.category) {
+        case "Adviser":
+          return 1;
+          break;
+        case "Curriculum Chairman":
+          return 2;
+          break;
+        case "Registrar":
+          return 3;
+          break;
+        case "Admin":
+          return 4;
+          break;
+        default:
+          return 0;
+          break;
+      }
+    })
+  };
+  const token = jwt.sign(unsignedObj, config.get("jwtPrivateKey"));
+  return token;
 };
 
-const Teacher = mongoose.Model("Teacher", teacherSchema);
+const Teacher = mongoose.model("Teacher", teacherSchema);
 
 function validateTeacher(teacher) {
   const schema = {

@@ -2,9 +2,9 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 const { uniqueString, string, joi_string } = require("./_template_schemas.js");
 
-const enrolleeSchema = {
+const enrolleeSchema = new mongoose.Schema({
   lrn: {
-    type: number,
+    type: Number,
     unique: true,
     max: 999999999999,
     min: 1,
@@ -21,10 +21,14 @@ const enrolleeSchema = {
       max: 3
     }
   },
-  record_id: mongoose.Schema.Types.ObjectId
-};
+  record_id: mongoose.Schema.Types.ObjectId,
+  classification: {
+    grade_level: Number,
+    section: Number
+  }
+});
 
-const Enrollee = mongoose.Model("Enrollee", enrolleeSchema);
+const Enrollee = mongoose.model("Enrollee", enrolleeSchema);
 
 function validateEnrollee(enrollee) {
   const schema = {
@@ -41,7 +45,11 @@ function validateEnrollee(enrollee) {
         .optional()
         .length(3)
     }),
-    record_id: Joi.objectId().optional()
+    record_id: Joi.objectId().optional(),
+    classification: Joi.object({
+      grade_level: Joi.number(),
+      section: Joi.number()
+    })
   };
   return Joi.validate(enrollee, schema);
 }

@@ -1,7 +1,7 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
 
-const sectionSchema = {
+const sectionSchema = new mongoose.Schema({
   isRegular: {
     type: Boolean,
     default: true
@@ -47,9 +47,9 @@ const sectionSchema = {
     }
   ],
   students: [mongoose.Schema.Types.ObjectId]
-};
+});
 
-const Section = mongoose.Model("Section", sectionSchema);
+const Section = mongoose.model("Section", sectionSchema);
 function validateSection(section) {
   const schema = {
     isRegular: Joi.boolean().default(true),

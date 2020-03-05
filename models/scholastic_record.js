@@ -1,7 +1,7 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
 
-const recordSchema = {
+const recordSchema = new mongoose.Schema({
   school: {
     name: {
       type: String,
@@ -112,9 +112,9 @@ const recordSchema = {
       }
     ]
   }
-};
+});
 
-const ScholaticRecord = mongoose.Model("Scholatic-Record", recordSchema);
+const ScholaticRecord = mongoose.model("Scholatic-Record", recordSchema);
 
 function validateRecord(record) {
   const schema = {

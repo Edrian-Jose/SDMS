@@ -1,13 +1,29 @@
-const config = require("config");
+const role_access = require("../config/role_access");
 
-module.exports = function(req, res, next) {
+function getRouteConfig(req) {
+  const path = req.path;
+  const method = req.method;
+  const route = role_access.find(route => {
+    const sameMethod = route.method == method;
+    const samePath = path.match(route.path);
+    return sameMethod && samePath;
+  });
+  return route;
+}
+module.exports.getRouteConfig = getRouteConfig;
+module.exports.authz = function(req, res, next) {
   try {
-    //get the user rights level from the db, access_rights(field)
-    //get the url of the api
-    //from the config file determine if the user rights is in the array of authorized rights level
-
-    next();
+    const user = req.user;
+    const config = getRouteConfig(req);
+    if (!config) return res.status(404).send("Endpoint not found");
+    let isAuthorized = false;
+    user.roles.forEach(role => {
+      isAuthorized = isAuthorized || config.user_access[role];
+    });
+    if (!isAuthorized)
+      throw new Error("Role of the user is unauthorized for the endpoint");
+    else next();
   } catch (ex) {
-    res.status(401).send("Unauthorized");
+    return res.status(403).send("Unauthorized");
   }
 };

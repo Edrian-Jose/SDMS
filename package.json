@@ -8,7 +8,7 @@
   "description": "It is a system for tracking doctrine students progress, evaluating shepherds, and evangelical workers evaluation",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll --verbose",
+    "test": "jest --verbose --runInBand",
     "serve": "nodemon index.js"
   },
   "author": "Edrian Jose Ferrer",
