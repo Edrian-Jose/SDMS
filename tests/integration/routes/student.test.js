@@ -80,7 +80,7 @@ describe("POST /api/students", () => {
   });
 
   it("should return 400 if student is already registered", async () => {
-    student.name = "Edrian Jose";
+    student.name.first = "Edrian Jose";
     token = new Teacher(teacher).generateAuthToken();
     const res = await request(server)
       .post("/api/students")

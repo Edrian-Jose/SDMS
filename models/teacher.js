@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const moment = require("moment");
 const config = require("config");
-const { uniqueString, joi_unique_string } = require("./_template_schemas.js");
+const { uniqueString, joi_string } = require("./_template_schemas.js");
 
 const teacherSchema = new mongoose.Schema({
   name: {
@@ -11,7 +11,7 @@ const teacherSchema = new mongoose.Schema({
     middle: uniqueString,
     last: uniqueString
   },
-  birthday: {
+  birthdate: {
     type: Date,
     required: true
   },
@@ -82,13 +82,17 @@ const Teacher = mongoose.model("Teacher", teacherSchema);
 function validateTeacher(teacher) {
   const schema = {
     name: Joi.object({
-      first: joi_unique_string,
-      middle: joi_unique_string,
-      last: joi_unique_string
+      first: joi_string,
+      middle: joi_string,
+      last: joi_string
     }),
-    birthday: Joi.date()
+    birthdate: Joi.date()
       .required()
-      .max(moment().subtract(10, "years")),
+      .max(
+        moment()
+          .subtract(18, "years")
+          .toJSON()
+      ),
     employee_number: Joi.number()
       .required()
       .min(1)
