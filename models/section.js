@@ -50,13 +50,14 @@ const sectionSchema = new mongoose.Schema({
 });
 
 const Section = mongoose.model("Section", sectionSchema);
+
 function validateSection(section) {
   const schema = {
     isRegular: Joi.boolean().default(true),
     school_year: Joi.object({
       start: Joi.number().required(),
       end: Joi.number().required()
-    }),
+    }).required(),
     grade_level: Joi.number()
       .required()
       .min(7)
@@ -80,7 +81,9 @@ function validateSection(section) {
         id: Joi.objectId()
       })
     ),
-    students: Joi.array().items(Joi.objectId())
+    students: Joi.array()
+      .items(Joi.objectId())
+      .min(1)
   };
 
   return Joi.validate(section, schema);

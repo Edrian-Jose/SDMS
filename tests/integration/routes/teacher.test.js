@@ -2,12 +2,20 @@ const request = require("supertest");
 const mongoose = require("mongoose");
 const { Teacher } = require("../../../models/teacher");
 
+let server;
+beforeEach(async () => {
+  server = require("../../../index");
+});
+
+afterEach(async () => {
+  await server.close();
+});
+
 describe("POST /api/teachers/", () => {
-  let server, token, teacher, admin, teacherDocument;
+  let token, teacher, admin, teacherDocument;
   beforeEach(async () => {
-    server = require("../../../index");
     admin = {
-      _id: (customerId = mongoose.Types.ObjectId().toHexString()),
+      _id: mongoose.Types.ObjectId().toHexString(),
       assignments: [{ category: "Admin" }]
     };
     teacher = {
@@ -29,7 +37,6 @@ describe("POST /api/teachers/", () => {
 
   afterEach(async () => {
     await Teacher.deleteMany({});
-    await server.close();
   });
 
   it("should return 401 if unauthenticated", async () => {

@@ -4,21 +4,24 @@ const { Teacher } = require("../../../models/teacher");
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+let server;
+beforeEach(async () => {
+  server = require("../../../index");
+});
+
+afterEach(async () => {
+  await server.close();
+});
+
 describe("Authentication", () => {
-  let server,
-    token,
+  let token,
     roles = [0, 1];
   beforeEach(async () => {
-    server = require("../../../index");
     const user = {
       _id: (customerId = mongoose.Types.ObjectId()),
       roles: [0]
     };
     token = jwt.sign(user, config.get("jwtPrivateKey"));
-  });
-
-  afterEach(async () => {
-    await server.close();
   });
 
   it("should return 401 if no token is provided", async () => {

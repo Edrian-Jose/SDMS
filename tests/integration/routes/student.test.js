@@ -3,8 +3,17 @@ const mongoose = require("mongoose");
 const { Student } = require("../../../models/student");
 const { Teacher } = require("../../../models/teacher");
 
+let server;
+beforeEach(async () => {
+  server = require("../../../index");
+});
+
+afterEach(async () => {
+  await server.close();
+});
+
 describe("POST /api/students", () => {
-  let server, token, student, teacher;
+  let token, student, teacher;
   beforeEach(async () => {
     server = require("../../../index");
     teacher = {
@@ -39,7 +48,6 @@ describe("POST /api/students", () => {
 
   afterEach(async () => {
     await Student.deleteMany({});
-    await server.close();
   });
 
   it("should return 401 if unauthenticated", async () => {
@@ -95,6 +103,7 @@ describe("POST /api/students", () => {
       .post("/api/students")
       .set("x-auth-token", token)
       .send(student);
+
     expect(res.body.lrn).toBe(student.lrn);
   });
 });

@@ -3,12 +3,19 @@ const mongoose = require("mongoose");
 const { Enrollee } = require("../../../models/enrollee");
 const { Teacher } = require("../../../models/teacher");
 
+let server;
+beforeEach(async () => {
+  server = require("../../../index");
+});
+
+afterEach(async () => {
+  await server.close();
+});
+
 describe("POST /api/enroll", () => {
-  let server;
   let token, teacher, enrollee, enrolleeDocument;
 
   beforeEach(() => {
-    server = require("../../../index");
     teacher = {
       _id: (customerId = mongoose.Types.ObjectId().toHexString()),
       assignments: [{ category: "Curriculum Chairman" }]
@@ -25,7 +32,6 @@ describe("POST /api/enroll", () => {
 
   afterEach(async () => {
     await Enrollee.deleteMany({});
-    await server.close();
   });
 
   it("should return 401 if unauthenticated", async () => {
