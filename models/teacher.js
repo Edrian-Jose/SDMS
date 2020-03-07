@@ -40,12 +40,7 @@ const teacherSchema = new mongoose.Schema({
         ],
         trim: true
       },
-      sections: [
-        {
-          grade: Number,
-          section: String
-        }
-      ]
+      sections: [mongoose.Schema.Types.ObjectId]
     }
   ]
 });
@@ -100,7 +95,7 @@ function validateTeacher(teacher) {
     password: Joi.string()
       .required()
       .min(7),
-    assignment: Joi.array().items({
+    assignments: Joi.array().items({
       category: Joi.string()
         .trim()
         .default("Subject Teacher")
@@ -110,7 +105,10 @@ function validateTeacher(teacher) {
           "Registrar",
           "Admin",
           "Curriculum Chairman"
-        )
+        ),
+      sections: Joi.array()
+        .items(Joi.objectId())
+        .min(1)
     })
   };
 

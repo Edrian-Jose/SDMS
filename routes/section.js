@@ -60,6 +60,7 @@ router.delete("/:id/:studentId", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
+  //TODO: delete also it's references to assigned teachers
   res.status(200).send("req");
 });
 

@@ -1,8 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const { Student, validateStudent } = require("../models/student");
+const { Teacher } = require("../models/teacher");
+const { Section } = require("../models/section");
+const { asyncForEach } = require("../plugins/asyncArray");
+
 router.get("/", async (req, res) => {
-  res.status(200).send("req");
+  const teacher = await Teacher.findById(req.user._id);
+  if (!teacher) {
+    return res.send("Looks like your account id is invalid");
+  }
+  const sectionIds = [];
+  teacher.assignments.forEach(assignment => {
+    assignment.sections.forEach(sectionId => {
+      sectionIds.push(sectionId);
+    });
+  });
+
+  const students = [];
+  await asyncForEach(sectionIds, async sectionId => {
+    const studentIds = (await Section.findById(sectionId)).students;
+    await asyncForEach(studentIds, async studentId => {
+      students.push(await Student.findById(studentId));
+    });
+  });
+  res.send(students);
 });
 
 router.post("/", async (req, res) => {
