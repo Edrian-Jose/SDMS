@@ -34,6 +34,7 @@ const sectionSchema = new mongoose.Schema({
     minlength: 2
   },
   adviser_id: mongoose.Schema.Types.ObjectId,
+  chairman_id: mongoose.Schema.Types.ObjectId,
   subject_teachers: [
     {
       learning_area: {
@@ -43,7 +44,7 @@ const sectionSchema = new mongoose.Schema({
         enum: ["Filipino"]
         //TODO: add the other learning areas options to schema
       },
-      id: mongoose.Schema.Types.ObjectId
+      teacher_id: mongoose.Schema.Types.ObjectId
     }
   ],
   students: [mongoose.Schema.Types.ObjectId]
@@ -71,6 +72,7 @@ function validateSection(section) {
       .trim()
       .min(2),
     adviser_id: Joi.objectId(),
+    chairman_id: Joi.objectId(),
     subject_teachers: Joi.array().items(
       Joi.object({
         learning_area: Joi.string()
@@ -78,7 +80,7 @@ function validateSection(section) {
           .trim()
           .valid("Filipino"),
         //TODO: add the other learning areas options to Joi validation
-        id: Joi.objectId()
+        teacher_id: Joi.objectId()
       })
     ),
     students: Joi.array()

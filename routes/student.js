@@ -1,41 +1,72 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const _ = require("lodash");
 const { Student, validateStudent } = require("../models/student");
 const { Teacher } = require("../models/teacher");
 const { Section } = require("../models/section");
 const { asyncForEach } = require("../plugins/asyncArray");
+const { removeDuplicateIds } = require("../plugins/objectIds");
 
+// View all students
 router.get("/", async (req, res) => {
   const teacher = await Teacher.findById(req.user._id);
+  //TODO: pass this logic to authorization middleware
   if (!teacher) {
     return res.send("Looks like your account id is invalid");
   }
-  const sectionIds = [];
-  teacher.assignments.forEach(assignment => {
-    assignment.sections.forEach(sectionId => {
-      sectionIds.push(sectionId);
+
+  let yearNow = new Date().getFullYear();
+  const advisorySections = await Section.find({
+    adviser_id: teacher._id,
+    $or: [{ "school_year.end": yearNow }, { "school_year.end": yearNow + 1 }]
+  });
+
+  const chairmanSections = await Section.find({
+    chairman_id: teacher._id,
+    $or: [{ "school_year.end": yearNow }, { "school_year.end": yearNow + 1 }]
+  });
+
+  const teachingSections = await Section.find({
+    "subject_teachers.teacher_id": teacher._id,
+    $or: [{ "school_year.end": yearNow }, { "school_year.end": yearNow + 1 }]
+  });
+
+  let handledSections = _.unionWith(
+    chairmanSections,
+    teachingSections,
+    advisorySections,
+    _.isEqual
+  );
+
+  const sectionStudentsArray = handledSections.map(section => section.students);
+  let studentsId = [];
+  sectionStudentsArray.forEach(studentsArray => {
+    studentsArray.forEach(studentId => {
+      if (!studentsId.includes(studentId)) {
+        studentsId.push(studentId);
+      }
     });
   });
 
+  studentsId = removeDuplicateIds(studentsId);
   const students = [];
-  await asyncForEach(sectionIds, async sectionId => {
-    const section = await Section.findById(sectionId);
-    const studentIds = section.students;
-    await asyncForEach(studentIds, async studentId => {
-      const studentDoc = await Student.findById(studentId);
-      students.push({
-        _id: studentDoc._id,
-        lrn: studentDoc.getLrn(),
-        fullname: studentDoc.getFullName(),
-        grade: section.grade_level,
-        section: section.number
-      });
+  await asyncForEach(studentsId, async id => {
+    const document = await Student.findById(id);
+    const section = await Section.findOne({ isRegular: true, students: id });
+    students.push({
+      _id: document._id,
+      lrn: document.getLrn(),
+      fullname: document.getFullName(),
+      grade: section.grade_level,
+      section: section.number
     });
   });
+
   res.send(students);
 });
 
+// Add info to students
 router.post("/", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) return res.status(400).send("Bad request, invalid student object");
@@ -58,6 +89,7 @@ router.post("/", async (req, res) => {
   res.send(student);
 });
 
+// View student info
 router.get("/:id", async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(req.params.id))
     return res.status(400).send("Bad request, id is not a valid object-id");
@@ -69,25 +101,62 @@ router.get("/:id", async (req, res) => {
   res.send(student);
 });
 
+// Edit info to students
 router.put("/:id", async (req, res) => {
-  res.status(200).send("req");
+  const { error } = validateStudent(req.body);
+  if (error) return res.status(400).send("Bad request, invalid student object");
+  const oldStudentInfo = await Student.findById(req.params.id);
+  if (oldStudentInfo.lrn != req.body.lrn) {
+    const duplicateLrn = await Student.findOne({ lrn: req.body.lrn });
+    if (duplicateLrn)
+      return res.status(400).send("Bad request, lrn already registered");
+  }
+  let nameChanged = false;
+  for (const prop in req.body.name) {
+    req.body.name[prop] = req.body.name[prop].toUpperCase();
+    if (oldStudentInfo.name[prop] != req.body.name[prop]) {
+      nameChanged = true;
+      break;
+    }
+  }
+  // console.log("name changed", oldStudentInfo.name.first != req.body.name.first.);
+
+  if (nameChanged) {
+    const duplicateName = await Student.findOne({
+      "name.last": req.body.name.last,
+      "name.first": req.body.name.first,
+      "name.middle": req.body.name.middle,
+      "name.extension": req.body.name.extension
+    });
+    if (duplicateName)
+      return res.status(400).send("Bad request, name already registered");
+  }
+
+  const student = await Student.findByIdAndUpdate(req.params.id, req.body);
+  res.send(req.body);
 });
+
+// Add scholastic record
 router.post("/:id", async (req, res) => {
   res.status(200).send("req");
 });
 
+// Download sf10
 router.get("/:id/downloads/sf10", async (req, res) => {
   res.status(200).send("req");
 });
 
+// Download reportCard
 router.get("/:id/downloads/reportCard", async (req, res) => {
   res.status(200).send("req");
 });
 
+// Encode Grades
 router.post("/:id/grades", async (req, res) => {
   res.status(200).send("req");
 });
 
+// Untag encoded grades
 router.delete("/:id/grades", async (req, res) => {
   res.status(200).send("req");
 });

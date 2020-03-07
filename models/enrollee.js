@@ -21,7 +21,6 @@ const enrolleeSchema = new mongoose.Schema({
       max: 3
     }
   },
-  record_id: mongoose.Schema.Types.ObjectId,
   classification: {
     grade_level: Number,
     section: Number
@@ -50,7 +49,6 @@ function validateEnrollee(enrollee) {
         .optional()
         .length(3)
     }),
-    record_id: Joi.objectId().optional(),
     classification: Joi.object({
       grade_level: Joi.number(),
       section: Joi.number()

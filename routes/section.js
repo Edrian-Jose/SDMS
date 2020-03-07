@@ -8,6 +8,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  //TODO: if enrollee has already infos
   const { error } = validateSection(req.body);
   if (error)
     return res.status(400).send("Bad request, section object is invalid");

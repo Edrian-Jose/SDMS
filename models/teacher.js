@@ -19,7 +19,8 @@ const teacherSchema = new mongoose.Schema({
     type: Number,
     min: 1,
     max: 9999999,
-    required: true
+    required: true,
+    unique: true
   },
   password: {
     type: String,
@@ -39,8 +40,8 @@ const teacherSchema = new mongoose.Schema({
           "Curriculum Chairman"
         ],
         trim: true
-      },
-      sections: [mongoose.Schema.Types.ObjectId]
+      }
+      //TODO: remove sections upon recreating /api/students GET
     }
   ]
 });
@@ -105,10 +106,7 @@ function validateTeacher(teacher) {
           "Registrar",
           "Admin",
           "Curriculum Chairman"
-        ),
-      sections: Joi.array()
-        .items(Joi.objectId())
-        .min(1)
+        )
     })
   };
 
