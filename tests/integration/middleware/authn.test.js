@@ -18,7 +18,7 @@ describe("Authentication", () => {
     roles = [0, 1];
   beforeEach(async () => {
     const user = {
-      _id: (customerId = mongoose.Types.ObjectId()),
+      _id: mongoose.Types.ObjectId(),
       roles: [0]
     };
     token = jwt.sign(user, config.get("jwtPrivateKey"));

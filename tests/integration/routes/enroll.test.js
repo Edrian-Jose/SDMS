@@ -17,7 +17,7 @@ describe("POST /api/enroll", () => {
 
   beforeEach(() => {
     teacher = {
-      _id: (customerId = mongoose.Types.ObjectId().toHexString()),
+      _id: mongoose.Types.ObjectId().toHexString(),
       assignments: [{ category: "Curriculum Chairman" }]
     };
     enrollee = {
@@ -97,7 +97,7 @@ describe("DELETE /api/enrollee", () => {
   beforeEach(async () => {
     server = require("../../../index");
     teacher = {
-      _id: (customerId = mongoose.Types.ObjectId().toHexString()),
+      _id: mongoose.Types.ObjectId().toHexString(),
       assignments: [
         {
           category: "Curriculum Chairman"

@@ -63,7 +63,7 @@ describe("Authorization", () => {
   it("should return 404 if path is invalid", async () => {
     roles.push(0);
     const user = {
-      _id: (customerId = mongoose.Types.ObjectId()),
+      _id: mongoose.Types.ObjectId(),
       roles: roles
     };
     token = new Teacher(user).generateAuthToken();
@@ -76,7 +76,7 @@ describe("Authorization", () => {
 
   it("should return 403 if unauthorized", async () => {
     const user = {
-      _id: (customerId = mongoose.Types.ObjectId()),
+      _id: mongoose.Types.ObjectId(),
       roles: [0]
     };
     token = jwt.sign(user, config.get("jwtPrivateKey"));
@@ -115,7 +115,7 @@ describe("Authorization", () => {
   //     });
 
   //     const user = {
-  //       _id: (customerId = mongoose.Types.ObjectId()),
+  //       _id: (mongoose.Types.ObjectId()),
   //       roles: [roleNumber]
   //     };
   //     const token = jwt.sign(user, config.get("jwtPrivateKey"));

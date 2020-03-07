@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const { Student, validateStudent } = require("../models/student");
 const { Teacher } = require("../models/teacher");
 const { Section } = require("../models/section");
@@ -19,9 +20,17 @@ router.get("/", async (req, res) => {
 
   const students = [];
   await asyncForEach(sectionIds, async sectionId => {
-    const studentIds = (await Section.findById(sectionId)).students;
+    const section = await Section.findById(sectionId);
+    const studentIds = section.students;
     await asyncForEach(studentIds, async studentId => {
-      students.push(await Student.findById(studentId));
+      const studentDoc = await Student.findById(studentId);
+      students.push({
+        _id: studentDoc._id,
+        lrn: studentDoc.getLrn(),
+        fullname: studentDoc.getFullName(),
+        grade: section.grade_level,
+        section: section.number
+      });
     });
   });
   res.send(students);
@@ -50,7 +59,14 @@ router.post("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  res.status(200).send("req");
+  if (!mongoose.Types.ObjectId.isValid(req.params.id))
+    return res.status(400).send("Bad request, id is not a valid object-id");
+  const student = await Student.findById(req.params.id);
+  if (!student)
+    return res
+      .status(400)
+      .send("Bad request, student with the given id cannot found");
+  res.send(student);
 });
 
 router.put("/:id", async (req, res) => {

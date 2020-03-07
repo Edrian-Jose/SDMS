@@ -13,9 +13,25 @@ const studentSchema = new mongoose.Schema({
     required: true
   },
   name: {
-    last: uniqueString,
-    first: uniqueString,
-    middle: uniqueString,
+    last: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      minlength: 2
+    },
+    first: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      required: true,
+      minlength: 2
+    },
+    middle: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      minlength: 2
+    },
     extension: {
       type: String,
       optional: true,
@@ -101,6 +117,20 @@ const studentSchema = new mongoose.Schema({
   }
 });
 
+studentSchema.methods.getFullName = function() {
+  const last = (this.name.last ? this.name.last : this.name.middle) + ", ";
+  const first = this.name.first + " ";
+  const ext = this.name.ext ? this.name.ext + " " : "";
+  const middle =
+    (this.name.last && this.name.middle ? this.name.middle : "") + " ";
+  return last + first + ext + middle;
+};
+
+studentSchema.methods.getLrn = function() {
+  const lrn = this.lrn;
+  let lrnString = new Array(12).join("0").slice(-12) + lrn;
+  return lrnString;
+};
 const Student = mongoose.model("Student", studentSchema);
 
 function validateStudent(student) {
@@ -111,13 +141,25 @@ function validateStudent(student) {
       .integer()
       .required(),
     name: Joi.object({
-      last: joi_string,
-      first: joi_string,
-      middle: joi_string,
+      last: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2),
+      first: Joi.string()
+        .required()
+        .uppercase()
+        .trim()
+        .min(2),
+      middle: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2),
       extension: Joi.string()
         .optional()
         .length(3)
-    }),
+    })
+      .required()
+      .or("last", "middle"),
     sex: Joi.string()
       .required()
       .uppercase()

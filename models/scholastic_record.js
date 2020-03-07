@@ -2,6 +2,7 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 
 const recordSchema = new mongoose.Schema({
+  owner_id: mongoose.Schema.Types.ObjectId,
   school: {
     name: {
       type: String,

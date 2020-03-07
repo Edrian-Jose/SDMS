@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const { Student } = require("../../../models/student");
 const { Teacher } = require("../../../models/teacher");
 const { Section } = require("../../../models/section");
-const { asyncForEach } = require("../../../plugins/asyncArray");
 let server;
 beforeEach(async () => {
   server = require("../../../index");
@@ -18,7 +17,7 @@ describe("POST /api/students", () => {
   beforeEach(async () => {
     server = require("../../../index");
     teacher = {
-      _id: (customerId = mongoose.Types.ObjectId().toHexString()),
+      _id: mongoose.Types.ObjectId().toHexString(),
       assignments: [{ category: "Adviser" }, { category: "Subject Teacher" }]
     };
 
@@ -112,7 +111,6 @@ describe("POST /api/students", () => {
 describe("GET /api/students", () => {
   let token,
     student,
-    user,
     section,
     studentDocument,
     sectionDocument,
@@ -212,11 +210,78 @@ describe("GET /api/students", () => {
     const res = await request(server)
       .get("/api/students")
       .set("x-auth-token", token);
-    console.log(res.body);
 
     expect(res.status).toBe(200);
   });
 
   //if user is unauthenticated
   //return filtered user objs if authorized
+});
+
+describe("GET /api/students/:id", () => {
+  let token, student, studentId, teacher;
+  beforeEach(async () => {
+    studentId = mongoose.Types.ObjectId();
+    student = {
+      _id: studentId,
+      lrn: 1,
+      name: {
+        last: "Ferrer",
+        first: "Edrian",
+        middle: "De Guzman"
+      },
+      sex: "Male",
+      birthdate: "2000-01-12T16:00:00.000Z",
+      mother_tongue: "Tagalog",
+      parents_name: {
+        father: "Ed",
+        mothers_maiden: "Ma Imelda Cardeño De Guzman"
+      },
+      guardian: {
+        name: "Ma Imelda Ferrer",
+        relationship: "Mother"
+      }
+    };
+
+    teacher = {
+      _id: mongoose.Types.ObjectId().toHexString(),
+      assignments: [{ category: "Adviser" }, { category: "Subject Teacher" }]
+    };
+    await new Student(student).save();
+    token = new Teacher(teacher).generateAuthToken();
+  });
+
+  afterEach(async () => {
+    await Student.deleteMany({});
+  });
+
+  it("should return 401 if unauthenticated", async () => {
+    const res = await request(server).get(
+      "/api/students/" + studentId.toHexString()
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("should return 400 when id is invalid", async () => {
+    const res = await request(server)
+      .get("/api/students/dasas")
+      .set("x-auth-token", token);
+
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 400 when student does not exist", async () => {
+    const res = await request(server)
+      .get("/api/students/" + mongoose.Types.ObjectId().toHexString())
+      .set("x-auth-token", token);
+    expect(res.status).toBe(400);
+  });
+
+  it("should return student when successful", async () => {
+    const res = await request(server)
+      .get("/api/students/" + studentId.toHexString())
+      .set("x-auth-token", token);
+
+    expect(res.body._id).toBe(studentId.toHexString());
+  });
 });
