@@ -25,6 +25,11 @@ module.exports = [
     user_access: [false, true, false, false, true]
   },
   {
+    method: "PUT",
+    path: /^\/api\/students\/(?:([^\/]+?))\/(?:([^\/]+?))\/?$/i,
+    user_access: [false, true, false, false, true]
+  },
+  {
     method: "GET",
     path: /^\/api\/students\/(?:([^\/]+?))\/downloads\/sf10\/?$/i,
     user_access: [false, true, false, true, true]

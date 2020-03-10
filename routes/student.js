@@ -166,7 +166,11 @@ router.post("/:id", async (req, res) => {
   res.send(record);
 });
 
-// Download sf10
+// Edit scholastic record
+router.put("/:id/:recordId", async (req, res) => {
+  res.status(200).send("req");
+});
+
 router.get("/:id/downloads/sf10", async (req, res) => {
   res.status(200).send("req");
 });
