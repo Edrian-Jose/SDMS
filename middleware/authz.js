@@ -1,4 +1,4 @@
-const role_access = require("../config/role_access");
+const role_access = require("../plugins/role_access");
 
 function getRouteConfig(req) {
   const path = req.path;

@@ -2,7 +2,15 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 
 const recordSchema = new mongoose.Schema({
-  owner_id: mongoose.Schema.Types.ObjectId,
+  owner_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true
+  },
+  completed: {
+    type: Boolean,
+    default: true
+  },
+  //TODO: on encoding of grades it will find a record with completed is falsem if nothing founf it will create a record
   school: {
     name: {
       type: String,
@@ -26,7 +34,7 @@ const recordSchema = new mongoose.Schema({
       minlength: 1
     },
     region: {
-      type: string,
+      type: String,
       required: true,
       minlength: 1
     }
@@ -55,8 +63,8 @@ const recordSchema = new mongoose.Schema({
   },
   adviser: {
     type: String,
-    trim: true,
-    required: true
+    required: true,
+    trim: true
   },
   subjects: [
     {
@@ -64,8 +72,20 @@ const recordSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        enum: ["Filipino"]
-        //TODO: add the other learning areas options to schema
+        enum: [
+          "Filipino",
+          "English",
+          "Mathematics",
+          "Science",
+          "Araling Panlipunan (AP)",
+          "Edukasyon sa Pagpapakatao (EsP)",
+          "Technology and Livelihood Education (TLE)",
+          "MAPEH",
+          "Music",
+          "Arts",
+          "Physical Education",
+          "Health"
+        ]
       },
       quarter_rating: [
         {
@@ -77,34 +97,43 @@ const recordSchema = new mongoose.Schema({
       ],
       quarter_rating_ave: {
         type: Number,
-        required: true,
         min: 0,
         max: 100
       },
-      remarks: { type: String, required: true, default: "Passed" }
+      remarks: { type: String }
     }
   ],
   gen_average: {
     type: Number,
-    required: true,
     min: 0,
     max: 100
   },
   scholastic_status: {
-    type: String,
-    required: true
+    type: String
   },
   remedials: {
-    start_date: { type: Date, required: true },
-    end_date: { type: Date, required: true },
+    start_date: { type: Date },
+    end_date: { type: Date },
     subjects: [
       {
         learning_area: {
           type: String,
           required: true,
           trim: true,
-          enum: ["Filipino"]
-          //TODO: add the other learning areas options to schema
+          enum: [
+            "Filipino",
+            "English",
+            "Mathematics",
+            "Science",
+            "Araling Panlipunan (AP)",
+            "Edukasyon sa Pagpapakatao (EsP)",
+            "Technology and Livelihood Education (TLE)",
+            "MAPEH",
+            "Music",
+            "Arts",
+            "Physical Education",
+            "Health"
+          ]
         },
         final_rating: { type: Number, required: true, min: 0, max: 100 },
         remedial_rating: { type: Number, required: true, min: 0, max: 100 },
@@ -119,6 +148,8 @@ const ScholaticRecord = mongoose.model("Scholatic-Record", recordSchema);
 
 function validateRecord(record) {
   const schema = {
+    owner_id: Joi.objectId().required(),
+    completed: Joi.boolean().default(true),
     school: Joi.object({
       name: Joi.string()
         .required()
@@ -151,6 +182,7 @@ function validateRecord(record) {
       start: Joi.number().required(),
       end: Joi.number().required()
     }),
+    //TODO: insert values to optional values below when downloading sf10
     adviser: Joi.string()
       .trim()
       .required(),
@@ -159,31 +191,38 @@ function validateRecord(record) {
         learning_area: Joi.string()
           .required()
           .trim()
-          .valid("Filipino"),
-        //TODO: add the other learning areas options to Joi validation
+          .valid(
+            "Filipino",
+            "English",
+            "Mathematics",
+            "Science",
+            "Araling Panlipunan (AP)",
+            "Edukasyon sa Pagpapakatao (EsP)",
+            "Technology and Livelihood Education (TLE)",
+            "MAPEH",
+            "Music",
+            "Arts",
+            "Physical Education",
+            "Health"
+          ),
         quarter_rating: Joi.array().items(
           Joi.number()
-            .required()
             .min(0)
             .max(100)
             .integer()
         ),
         quarter_rating_ave: Joi.number()
-          .required()
           .min(0)
           .max(100)
           .integer(),
         remarks: Joi.string()
-          .required()
-          .default("Passed")
       })
     ),
     gen_average: Joi.number()
-      .required()
       .min(0)
       .max(100)
       .integer(),
-    scholastic_status: Joi.string().required(),
+    scholastic_status: Joi.string(),
     remedials: Joi.object({
       start_date: Joi.date().required(),
       end_date: Joi.date().required(),
@@ -192,8 +231,20 @@ function validateRecord(record) {
           learning_area: Joi.string()
             .required()
             .trim()
-            .valid("Filipino"),
-          //TODO: add the other learning areas options to Joi validation
+            .valid(
+              "Filipino",
+              "English",
+              "Mathematics",
+              "Science",
+              "Araling Panlipunan (AP)",
+              "Edukasyon sa Pagpapakatao (EsP)",
+              "Technology and Livelihood Education (TLE)",
+              "MAPEH",
+              "Music",
+              "Arts",
+              "Physical Education",
+              "Health"
+            ),
           final_rating: Joi.number()
             .required()
             .min(0)

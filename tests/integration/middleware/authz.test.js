@@ -1,18 +1,28 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
 const { Teacher } = require("../../../models/teacher");
-const role_access = require("../../../config/role_access");
+const role_access = require("../../../plugins/role_access");
 const { getRouteConfig } = require("../../../middleware/authz");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+
+let server;
 async function asyncForEach(array, callback) {
   for (const iterator of array) {
     await callback(iterator);
   }
 }
+
+beforeEach(() => {
+  server = require("../../../index");
+});
+
+afterEach(async () => {
+  await server.close();
+  server = null;
+});
 describe("Authorization", () => {
-  let server,
-    token,
+  let token,
     roles = [];
   reqS = [
     { method: "GET", path: "/api/students" },
@@ -50,14 +60,8 @@ describe("Authorization", () => {
     { method: "GET", path: "/api/logs/id" }
   ];
   beforeEach(() => {
-    server = require("../../../index");
     token = null;
     roles = [];
-  });
-
-  afterEach(async () => {
-    await server.close();
-    server = null;
   });
 
   it("should return 404 if path is invalid", async () => {

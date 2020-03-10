@@ -25,6 +25,7 @@ describe("POST /api/teachers/", () => {
         last: "Ferrer"
       },
       birthdate: "2000-01-12T16:00:00.000Z",
+      gender: "Male",
       employee_number: 9999998,
       password: "9999998"
     };

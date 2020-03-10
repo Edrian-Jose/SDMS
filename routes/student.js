@@ -1,10 +1,19 @@
+//Dependencies
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
 const _ = require("lodash");
+
+//Models
 const { Student, validateStudent } = require("../models/student");
 const { Teacher } = require("../models/teacher");
 const { Section } = require("../models/section");
+const {
+  ScholaticRecord,
+  validateScholasticRecord
+} = require("../models/scholastic_record");
+
+//Plugins
 const { asyncForEach } = require("../plugins/asyncArray");
 const { removeDuplicateIds } = require("../plugins/objectIds");
 
@@ -138,7 +147,23 @@ router.put("/:id", async (req, res) => {
 
 // Add scholastic record
 router.post("/:id", async (req, res) => {
-  res.status(200).send("req");
+  const { error } = validateScholasticRecord(req.body);
+  if (error) return res.status(400).send("Bad request, invalid record object");
+
+  const duplicateRecord = await ScholaticRecord.findOne({
+    owner_id: req.body.owner_id,
+    "school.id": req.body.school.id,
+    grade_level: req.body.grade_level,
+    section: req.body.section,
+    "school_year.start": req.body.school_year.start
+  });
+
+  if (duplicateRecord)
+    return res.status(400).send("Bad request, record already exist");
+
+  const record = new ScholaticRecord(req.body);
+  await record.save();
+  res.send(record);
 });
 
 // Download sf10

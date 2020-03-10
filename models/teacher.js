@@ -15,6 +15,12 @@ const teacherSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  gender: {
+    type: String,
+    uppercase: true,
+    required: true,
+    enum: ["MALE", "FEMALE"]
+  },
   employee_number: {
     type: Number,
     min: 1,
@@ -41,7 +47,6 @@ const teacherSchema = new mongoose.Schema({
         ],
         trim: true
       }
-      //TODO: remove sections upon recreating /api/students GET
     }
   ]
 });
@@ -89,6 +94,10 @@ function validateTeacher(teacher) {
           .subtract(18, "years")
           .toJSON()
       ),
+    gender: Joi.string()
+      .uppercase()
+      .required()
+      .valid("MALE", "FEMALE"),
     employee_number: Joi.number()
       .required()
       .min(1)

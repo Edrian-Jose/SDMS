@@ -9,10 +9,6 @@ beforeEach(async () => {
   server = require("../../../index");
 });
 
-afterEach(async () => {
-  await server.close();
-});
-
 describe("Authentication", () => {
   let token,
     roles = [0, 1];
@@ -22,6 +18,10 @@ describe("Authentication", () => {
       roles: [0]
     };
     token = jwt.sign(user, config.get("jwtPrivateKey"));
+  });
+
+  afterEach(async () => {
+    await server.close();
   });
 
   it("should return 401 if no token is provided", async () => {

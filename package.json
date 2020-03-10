@@ -5,7 +5,7 @@
     "testEnvironment": "node"
   },
   "version": "1.0.0",
-  "description": "It is a system for tracking doctrine students progress, evaluating shepherds, and evangelical workers evaluation",
+  "description": "It is a system for student data management",
   "main": "index.js",
   "scripts": {
     "test": "jest --verbose --runInBand",

@@ -41,8 +41,20 @@ const sectionSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        enum: ["Filipino"]
-        //TODO: add the other learning areas options to schema
+        enum: [
+          "Filipino",
+          "English",
+          "Mathematics",
+          "Science",
+          "Araling Panlipunan (AP)",
+          "Edukasyon sa Pagpapakatao (EsP)",
+          "Technology and Livelihood Education (TLE)",
+          "MAPEH",
+          "Music",
+          "Arts",
+          "Physical Education",
+          "Health"
+        ]
       },
       teacher_id: mongoose.Schema.Types.ObjectId
     }
@@ -78,8 +90,20 @@ function validateSection(section) {
         learning_area: Joi.string()
           .required()
           .trim()
-          .valid("Filipino"),
-        //TODO: add the other learning areas options to Joi validation
+          .valid(
+            "Filipino",
+            "English",
+            "Mathematics",
+            "Science",
+            "Araling Panlipunan (AP)",
+            "Edukasyon sa Pagpapakatao (EsP)",
+            "Technology and Livelihood Education (TLE)",
+            "MAPEH",
+            "Music",
+            "Arts",
+            "Physical Education",
+            "Health"
+          ),
         teacher_id: Joi.objectId()
       })
     ),
