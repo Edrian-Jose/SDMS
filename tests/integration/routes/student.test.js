@@ -572,7 +572,139 @@ describe("POST /api/students/:id", () => {
 
     expect(res.body.owner_id).toBe(studentId.toHexString());
   });
-  //if record obj is invalid
-  //if record already exist
-  //if record creation is successful
+});
+
+describe("PUT /api/students/:id/recordId", () => {
+  // if record obj is invalid
+  // if new record is already exists
+  // if successful
+  let token,
+    teacher,
+    studentId,
+    student,
+    studentDocument,
+    recordId,
+    record,
+    recordDocument;
+
+  beforeEach(async () => {
+    teacher = {
+      _id: mongoose.Types.ObjectId().toHexString(),
+      assignments: [{ category: "Adviser" }, { category: "Subject Teacher" }]
+    };
+    studentId = mongoose.Types.ObjectId();
+    student = {
+      _id: studentId,
+      lrn: 1,
+      name: {
+        last: "Ferrer",
+        first: "Edrian Jose",
+        middle: "De Guzman"
+      },
+      sex: "Male",
+      birthdate: "2000-01-12T16:00:00.000Z",
+      mother_tongue: "Tagalog",
+      parents_name: {
+        father: "Ed",
+        mothers_maiden: "Ma Imelda Cardeño De Guzman"
+      },
+      guardian: {
+        name: "Ma Imelda Ferrer",
+        relationship: "Mother"
+      }
+    };
+    studentDocument = new Student(student);
+    await studentDocument.save();
+
+    record = {
+      owner_id: studentId,
+      completed: false,
+      school: {
+        name: "	Pres. Sergio Osmena, Sr. High School",
+        id: 305296,
+        district: "1",
+        division: "2",
+        region: "NCR"
+      },
+      grade_level: 7,
+      section: "1-Earth",
+      school_year: {
+        start: 2019,
+        end: 2020
+      },
+      adviser: "Juan Dela Cruz",
+      subjects: learning_areas.map(area => {
+        return {
+          learning_area: area,
+          quarter_rating: []
+        };
+      })
+    };
+    recordDocument = new ScholaticRecord(record);
+    await recordDocument.save();
+
+    record.grade_level = 8;
+    recordDocument = new ScholaticRecord(record);
+    await recordDocument.save();
+  });
+
+  afterEach(async () => {
+    await Student.deleteMany({});
+    await ScholaticRecord.deleteMany({});
+  });
+
+  it("should return 401 if unauthenticated", async () => {
+    const res = await request(server).put(
+      `/api/students/${studentId.toHexString()}/${recordDocument._id.toHexString()}`
+    );
+    expect(res.status).toBe(401);
+  });
+
+  it("should return 403 if unauthorized", async () => {
+    teacher.assignments[0].category = "Subject Teacher";
+    token = new Teacher(teacher).generateAuthToken();
+
+    const res = await request(server)
+      .put(
+        `/api/students/${studentId.toHexString()}/${recordDocument._id.toHexString()}`
+      )
+      .set("x-auth-token", token);
+
+    expect(res.status).toBe(403);
+  });
+
+  it("should return 400 if record obj is invalid", async () => {
+    token = new Teacher(teacher).generateAuthToken();
+    delete record.owner_id;
+    const res = await request(server)
+      .put(
+        `/api/students/${studentId.toHexString()}/${recordDocument._id.toHexString()}`
+      )
+      .set("x-auth-token", token)
+      .send(record);
+    expect(res.status).toBe(400);
+  });
+
+  it("should return 400 if record already exist", async () => {
+    token = new Teacher(teacher).generateAuthToken();
+    record.grade_level = 7;
+    const res = await request(server)
+      .put(
+        `/api/students/${studentId.toHexString()}/${recordDocument._id.toHexString()}`
+      )
+      .set("x-auth-token", token)
+      .send(record);
+
+    expect(res.status).toBe(400);
+  });
+
+  // it("should return record obj if successful", async () => {
+  //   token = new Teacher(teacher).generateAuthToken();
+  //   const res = await request(server)
+  //     .put(`/api/students/${studentId.toHexString()}/${recordId.toHexString()}`)
+  //     .set("x-auth-token", token)
+  //     .send(record);
+
+  //   expect(res.body.owner_id).toBe(studentId.toHexString());
+  // });
 });

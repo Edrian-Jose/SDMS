@@ -114,32 +114,22 @@ router.get("/:id", async (req, res) => {
 router.put("/:id", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) return res.status(400).send("Bad request, invalid student object");
-  const oldStudentInfo = await Student.findById(req.params.id);
-  if (oldStudentInfo.lrn != req.body.lrn) {
-    const duplicateLrn = await Student.findOne({ lrn: req.body.lrn });
-    if (duplicateLrn)
-      return res.status(400).send("Bad request, lrn already registered");
-  }
-  let nameChanged = false;
-  for (const prop in req.body.name) {
-    req.body.name[prop] = req.body.name[prop].toUpperCase();
-    if (oldStudentInfo.name[prop] != req.body.name[prop]) {
-      nameChanged = true;
-      break;
-    }
-  }
-  // console.log("name changed", oldStudentInfo.name.first != req.body.name.first.);
+  const duplicateLrn = await Student.findOne({
+    _id: { $not: { $eq: req.params.id } },
+    lrn: req.body.lrn
+  });
+  if (duplicateLrn)
+    return res.status(400).send("Bad request, lrn already registered");
 
-  if (nameChanged) {
-    const duplicateName = await Student.findOne({
-      "name.last": req.body.name.last,
-      "name.first": req.body.name.first,
-      "name.middle": req.body.name.middle,
-      "name.extension": req.body.name.extension
-    });
-    if (duplicateName)
-      return res.status(400).send("Bad request, name already registered");
-  }
+  const duplicateName = await Student.findOne({
+    _id: { $not: { $eq: req.params.id } },
+    "name.last": req.body.name.last,
+    "name.first": req.body.name.first,
+    "name.middle": req.body.name.middle,
+    "name.extension": req.body.name.extension
+  });
+  if (duplicateName)
+    return res.status(400).send("Bad request, name already registered");
 
   const student = await Student.findByIdAndUpdate(req.params.id, req.body);
   res.send(req.body);
@@ -168,7 +158,26 @@ router.post("/:id", async (req, res) => {
 
 // Edit scholastic record
 router.put("/:id/:recordId", async (req, res) => {
-  res.status(200).send("req");
+  const { error } = validateScholasticRecord(req.body);
+  if (error) return res.status(400).send("Bad request, invalid record object");
+
+  const duplicateRecord = await ScholaticRecord.findOne({
+    _id: { $not: { $eq: req.params.recordId } },
+    owner_id: req.body.owner_id,
+    "school.id": req.body.school.id,
+    grade_level: req.body.grade_level,
+    section: req.body.section,
+    "school_year.start": req.body.school_year.start
+  });
+
+  if (duplicateRecord)
+    return res.status(400).send("Bad request, record already exist");
+
+  const record = await ScholaticRecord.findByIdAndUpdate(
+    req.params.recordId,
+    req.body
+  );
+  res.send(req.body);
 });
 
 router.get("/:id/downloads/sf10", async (req, res) => {
