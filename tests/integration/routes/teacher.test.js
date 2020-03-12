@@ -1,13 +1,14 @@
 const request = require("supertest");
 const mongoose = require("mongoose");
 const { Teacher } = require("../../../models/teacher");
-
+const SystemLog = require("../../../models/log");
 let server;
 beforeEach(async () => {
   server = require("../../../index");
 });
 
 afterEach(async () => {
+  await SystemLog.deleteMany({});
   await server.close();
 });
 
@@ -92,7 +93,7 @@ describe("POST /api/teachers/", () => {
       .post("/api/teachers")
       .set("x-auth-token", token)
       .send(teacher);
-    expect(res.body.employee_number).toBe(teacher.employee_number);
+    expect(parseInt(res.body.employee_number)).toBe(teacher.employee_number);
   });
   //if unauthenticated /
   //if unauthorized /
@@ -100,4 +101,67 @@ describe("POST /api/teachers/", () => {
   //if employee number already registered /
   //if teacher already registered /
   //if successful execution
+});
+
+describe("GET /api/teachers", () => {
+  let token, teacher, admin, teacherDocument, teacherIds;
+  beforeEach(async () => {
+    admin = {
+      _id: mongoose.Types.ObjectId().toHexString(),
+      assignments: [{ category: "Admin" }]
+    };
+    teacher = {
+      name: {
+        first: "Edrian",
+        middle: "De Guzman",
+        last: "Ferrer"
+      },
+      birthdate: "2000-01-12T16:00:00.000Z",
+      gender: "Male",
+      employee_number: 1,
+      password: "1234567",
+      assignments: [
+        {
+          category: "Subject Teacher"
+        }
+      ]
+    };
+    // teacherDocument = new Teacher(teacher);
+    // await teacherDocument.save();
+    teacherIds = [];
+    for (let i = 0; i < 10; i++) {
+      teacherIds.push(mongoose.Types.ObjectId());
+      teacher._id = teacherIds[i];
+      teacher.employee_number++;
+      teacher.name.first += "n";
+      teacherDocument = new Teacher(teacher);
+      await teacherDocument.save();
+    }
+  });
+
+  afterEach(async () => {
+    await Teacher.deleteMany({});
+  });
+
+  it("should return 401 if unauthenticated", async () => {
+    const res = await request(server).get("/api/teachers");
+    expect(res.status).toBe(401);
+  });
+
+  it("should return 403 if unauthorized", async () => {
+    admin.assignments[0].category = "Subject Teacher";
+    token = new Teacher(admin).generateAuthToken();
+    const res = await request(server)
+      .get("/api/teachers")
+      .set("x-auth-token", token);
+    expect(res.status).toBe(403);
+  });
+
+  it("should return teachers if successful", async () => {
+    token = new Teacher(admin).generateAuthToken();
+    const res = await request(server)
+      .get("/api/teachers")
+      .set("x-auth-token", token);
+    expect(res.body.length).toBe(teacherIds.length);
+  });
 });

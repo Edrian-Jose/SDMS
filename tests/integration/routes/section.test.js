@@ -3,13 +3,14 @@ const mongoose = require("mongoose");
 const { Section } = require("../../../models/section");
 const { Enrollee } = require("../../../models/enrollee");
 const { Teacher } = require("../../../models/teacher");
-
+const SystemLog = require("../../../models/log");
 let server;
 beforeEach(async () => {
   server = require("../../../index");
 });
 
 afterEach(async () => {
+  await SystemLog.deleteMany({});
   await server.close();
 });
 

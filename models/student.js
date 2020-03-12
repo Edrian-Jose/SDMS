@@ -10,7 +10,10 @@ const studentSchema = new mongoose.Schema({
     unique: true,
     max: 999999999999,
     min: 1,
-    required: true
+    required: true,
+    get: lrn => {
+      return new Array(12).join("0").slice(-12) + lrn;
+    }
   },
   name: {
     last: {
@@ -126,11 +129,6 @@ studentSchema.methods.getFullName = function() {
   return last + first + ext + middle;
 };
 
-studentSchema.methods.getLrn = function() {
-  const lrn = this.lrn;
-  let lrnString = new Array(12).join("0").slice(-12) + lrn;
-  return lrnString;
-};
 const Student = mongoose.model("Student", studentSchema);
 
 function validateStudent(student) {

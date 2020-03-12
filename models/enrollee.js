@@ -8,7 +8,10 @@ const enrolleeSchema = new mongoose.Schema({
     unique: true,
     max: 999999999999,
     min: 1,
-    required: true
+    required: true,
+    get: lrn => {
+      return new Array(12).join("0").slice(-12) + lrn;
+    }
   },
   name: {
     last: uniqueString,

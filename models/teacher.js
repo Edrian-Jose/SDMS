@@ -6,6 +6,11 @@ const config = require("config");
 const { uniqueString, joi_string } = require("./_template_schemas.js");
 
 const teacherSchema = new mongoose.Schema({
+  active: {
+    type: Boolean,
+    required: true,
+    default: true
+  },
   name: {
     first: uniqueString,
     middle: uniqueString,
@@ -26,7 +31,10 @@ const teacherSchema = new mongoose.Schema({
     min: 1,
     max: 9999999,
     required: true,
-    unique: true
+    unique: true,
+    get: v => {
+      return new Array(7).join("0").slice(-7) + v;
+    }
   },
   password: {
     type: String,
@@ -86,10 +94,12 @@ teacherSchema.methods.fullname = function() {
     (this.name.last && this.name.middle ? this.name.middle : "") + " ";
   return last + first + middle;
 };
+
 const Teacher = mongoose.model("Teacher", teacherSchema);
 
 function validateTeacher(teacher) {
   const schema = {
+    active: Joi.boolean().default(true),
     name: Joi.object({
       first: joi_string,
       middle: joi_string,
@@ -113,18 +123,20 @@ function validateTeacher(teacher) {
     password: Joi.string()
       .required()
       .min(7),
-    assignments: Joi.array().items({
-      category: Joi.string()
-        .trim()
-        .default("Subject Teacher")
-        .valid(
-          "Subject Teacher",
-          "Adviser",
-          "Registrar",
-          "Admin",
-          "Curriculum Chairman"
-        )
-    })
+    assignments: Joi.array().items(
+      Joi.object({
+        category: Joi.string()
+          .trim()
+          .default("Subject Teacher")
+          .valid(
+            "Subject Teacher",
+            "Adviser",
+            "Registrar",
+            "Admin",
+            "Curriculum Chairman"
+          )
+      })
+    )
   };
 
   return Joi.validate(teacher, schema);

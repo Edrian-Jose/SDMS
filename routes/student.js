@@ -70,7 +70,7 @@ router.get("/", async (req, res) => {
     const section = await Section.findOne({ isRegular: true, students: id });
     students.push({
       _id: document._id,
-      lrn: document.getLrn(),
+      lrn: document.lrn,
       fullname: document.getFullName(),
       grade: section.grade_level,
       section: section.number

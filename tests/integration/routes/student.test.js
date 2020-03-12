@@ -4,6 +4,7 @@ const { Student } = require("../../../models/student");
 const { Teacher } = require("../../../models/teacher");
 const { Section } = require("../../../models/section");
 const { ScholasticRecord } = require("../../../models/scholastic_record");
+const SystemLog = require("../../../models/log");
 const learning_areas = require("../../../plugins/learning_areas");
 
 let server;
@@ -12,6 +13,7 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  await SystemLog.deleteMany({});
   await server.close();
 });
 
@@ -107,7 +109,7 @@ describe("POST /api/students", () => {
       .set("x-auth-token", token)
       .send(student);
 
-    expect(res.body.lrn).toBe(student.lrn);
+    expect(parseInt(res.body.lrn)).toBe(student.lrn);
   });
 });
 

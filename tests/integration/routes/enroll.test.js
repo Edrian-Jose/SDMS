@@ -2,13 +2,14 @@ const request = require("supertest");
 const mongoose = require("mongoose");
 const { Enrollee } = require("../../../models/enrollee");
 const { Teacher } = require("../../../models/teacher");
-
+const SystemLog = require("../../../models/log");
 let server;
 beforeEach(async () => {
   server = require("../../../index");
 });
 
 afterEach(async () => {
+  await SystemLog.deleteMany({});
   await server.close();
 });
 
@@ -86,7 +87,7 @@ describe("POST /api/enroll", () => {
       .post("/api/enroll")
       .set("x-auth-token", token)
       .send(enrollee);
-    expect(res.body.lrn).toBe(enrollee.lrn);
+    expect(parseInt(res.body.lrn)).toBe(enrollee.lrn);
   });
 });
 
@@ -155,6 +156,6 @@ describe("DELETE /api/enrollee", () => {
       .delete("/api/enroll/" + enrollee.lrn)
       .set("x-auth-token", token);
 
-    expect(res.body.lrn).toBe(enrollee.lrn);
+    expect(parseInt(res.body.lrn)).toBe(enrollee.lrn);
   });
 });
