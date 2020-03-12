@@ -78,6 +78,13 @@ teacherSchema.methods.generateAuthToken = function() {
   return token;
 };
 
+teacherSchema.methods.fullname = function() {
+  const last = (this.name.last ? this.name.last : this.name.middle) + ", ";
+  const first = this.name.first + " ";
+  const middle =
+    (this.name.last && this.name.middle ? this.name.middle : "") + " ";
+  return last + first + middle;
+};
 const Teacher = mongoose.model("Teacher", teacherSchema);
 
 function validateTeacher(teacher) {

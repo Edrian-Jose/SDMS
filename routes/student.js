@@ -9,10 +9,11 @@ const { Student, validateStudent } = require("../models/student");
 const { Teacher } = require("../models/teacher");
 const { Section } = require("../models/section");
 const {
-  ScholaticRecord,
-  validateScholasticRecord
+  ScholasticRecord,
+  validateScholasticRecord,
+  validateGradeRecord
 } = require("../models/scholastic_record");
-
+const learning_areas = require("../plugins/learning_areas");
 //Plugins
 const { asyncForEach } = require("../plugins/asyncArray");
 const { removeDuplicateIds } = require("../plugins/objectIds");
@@ -132,7 +133,7 @@ router.put("/:id", async (req, res) => {
     return res.status(400).send("Bad request, name already registered");
 
   const student = await Student.findByIdAndUpdate(req.params.id, req.body);
-  res.send(req.body);
+  res.send(student);
 });
 
 // Add scholastic record
@@ -140,7 +141,7 @@ router.post("/:id", async (req, res) => {
   const { error } = validateScholasticRecord(req.body);
   if (error) return res.status(400).send("Bad request, invalid record object");
 
-  const duplicateRecord = await ScholaticRecord.findOne({
+  const duplicateRecord = await ScholasticRecord.findOne({
     owner_id: req.body.owner_id,
     "school.id": req.body.school.id,
     grade_level: req.body.grade_level,
@@ -151,7 +152,7 @@ router.post("/:id", async (req, res) => {
   if (duplicateRecord)
     return res.status(400).send("Bad request, record already exist");
 
-  const record = new ScholaticRecord(req.body);
+  const record = new ScholasticRecord(req.body);
   await record.save();
   res.send(record);
 });
@@ -161,7 +162,7 @@ router.put("/:id/:recordId", async (req, res) => {
   const { error } = validateScholasticRecord(req.body);
   if (error) return res.status(400).send("Bad request, invalid record object");
 
-  const duplicateRecord = await ScholaticRecord.findOne({
+  const duplicateRecord = await ScholasticRecord.findOne({
     _id: { $not: { $eq: req.params.recordId } },
     owner_id: req.body.owner_id,
     "school.id": req.body.school.id,
@@ -173,13 +174,14 @@ router.put("/:id/:recordId", async (req, res) => {
   if (duplicateRecord)
     return res.status(400).send("Bad request, record already exist");
 
-  const record = await ScholaticRecord.findByIdAndUpdate(
+  const record = await ScholasticRecord.findByIdAndUpdate(
     req.params.recordId,
     req.body
   );
-  res.send(req.body);
+  res.send(record);
 });
 
+// Download SF10
 router.get("/:id/downloads/sf10", async (req, res) => {
   res.status(200).send("req");
 });
@@ -191,12 +193,170 @@ router.get("/:id/downloads/reportCard", async (req, res) => {
 
 // Encode Grades
 router.post("/:id/grades", async (req, res) => {
-  res.status(200).send("req");
+  let record;
+  const { error } = validateGradeRecord(req.body);
+  if (error)
+    return res.status(400).send("Bad request, grade object is invalid");
+
+  let yearNow = new Date().getFullYear();
+  const section = await Section.findOne({
+    students: req.params.id,
+    $or: [{ "school_year.end": yearNow }, { "school_year.end": yearNow + 1 }],
+    "subject_teachers.teacher_id": req.user._id,
+    "subject_teachers.learning_area": req.body.learning_area
+  });
+  if (!section)
+    return res
+      .status(400)
+      .send(
+        "Bad request, student is not belong to any of your handled sections"
+      );
+  for (let i = section.grade_level - 1; i >= 7; i--) {
+    const prevRecord = await ScholasticRecord.findOne({
+      owner_id: req.params.id,
+      grade_level: i,
+      "subjects.learning_area": req.body.learning_area,
+      "subjects.quarter_rating.3": { $exists: true }
+    });
+    if (!prevRecord)
+      return res.status(400).send("Bad request, cannot find previous records");
+  }
+
+  if (req.body.quarter > 1) {
+    record = await ScholasticRecord.findOne({
+      owner_id: req.params.id,
+      grade_level: section.grade_level,
+      "school_year.start": section.school_year.start,
+      completed: false,
+      $and: [
+        { "subjects.learning_area": req.body.learning_area },
+        { "subjects.quarter_rating": { $size: req.body.quarter - 1 } }
+      ]
+    });
+    if (!record) {
+      const prevRecord = await ScholasticRecord.findOne({
+        owner_id: req.params.id,
+        grade_level: section.grade_level,
+        "school_year.start": section.school_year.start,
+        completed: true,
+        $and: [
+          { "subjects.learning_area": req.body.learning_area },
+          { "subjects.quarter_rating": { $size: req.body.quarter - 1 } }
+        ]
+      });
+      if (prevRecord) {
+        prevRecord.completed = false;
+        prevRecord.school = {
+          name: "	Pres. Sergio Osmena, Sr. High School",
+          id: 305296,
+          district: "1",
+          division: "2",
+          region: "NCR"
+        };
+        //TODO replace assignment of school to query in database system settings
+        prevRecord.section = `${section.number}-${section.name}`;
+        prevRecord.adviser = await Teacher.findById(
+          section.adviser_id
+        ).fullname();
+        delete prevRecord.scholastic_status;
+        record = new ScholasticRecord(prevRecord);
+      } else {
+        return res
+          .status(400)
+          .send("Bad request, previous grades are not encoded yet");
+      }
+    }
+  } else {
+    record = new ScholasticRecord({
+      owner_id: req.params.id,
+      completed: false,
+      school: {
+        name: "	Pres. Sergio Osmena, Sr. High School",
+        id: 305296,
+        district: "1",
+        division: "2",
+        region: "NCR"
+      },
+      grade_level: section.grade_level,
+      section: `${section.number}-${section.name}`,
+      school_year: section.school_year,
+      adviser: await Teacher.findById(section.adviser_id).fullname(),
+      subjects: learning_areas.map(area => {
+        return {
+          learning_area: area,
+          quarter_rating: [87]
+        };
+      })
+    });
+  }
+
+  record = await ScholasticRecord.findOne({
+    owner_id: req.params.id,
+    grade_level: section.grade_level,
+    "school_year.start": section.school_year.start,
+    completed: false
+  });
+
+  const subjects = record.subjects.map(subject => {
+    if (subject.learning_area == req.body.learning_area) {
+      subject.quarter_rating[req.body.quarter - 1] = req.body.grade;
+    }
+    return subject;
+  });
+  record.subjects = subjects;
+  await record.save();
+  res.send(record);
 });
 
 // Untag encoded grades
 router.delete("/:id/grades", async (req, res) => {
-  res.status(200).send("req");
+  const { error } = validateGradeRecord(req.body);
+  if (error)
+    return res.status(400).send("Bad request, grade object is invalid");
+
+  let yearNow = new Date().getFullYear();
+  const section = await Section.findOne({
+    students: req.params.id,
+    $or: [{ "school_year.end": yearNow }, { "school_year.end": yearNow + 1 }],
+    "subject_teachers.teacher_id": req.user._id,
+    "subject_teachers.learning_area": req.body.learning_area
+  });
+  if (!section)
+    return res
+      .status(400)
+      .send(
+        "Bad request, student is not belong to any of your handled sections"
+      );
+
+  const record = await ScholasticRecord.findOne({
+    owner_id: req.params.id,
+    grade_level: section.grade_level,
+    "school_year.start": section.school_year.start,
+    completed: false
+  });
+  if (!record) {
+    return res.status(400).send("Bad request, cannot find current record");
+  }
+  const subject = record.subjects.find(subject => {
+    return subject.learning_area == req.body.learning_area;
+  });
+  console.log(subject.quarter_rating.length, req.body.quarter);
+
+  if (subject.quarter_rating.length != req.body.quarter) {
+    return res
+      .status(400)
+      .send("Bad request, no grade found at quarter " + req.body.quarter);
+  }
+
+  const subjects = record.subjects.map(subject => {
+    if (subject.learning_area == req.body.learning_area) {
+      subject.quarter_rating.splice(req.body.quarter - 1, 1);
+    }
+    return subject;
+  });
+  record.subjects = subjects;
+  await record.save();
+  res.send(record);
 });
 
 module.exports = router;

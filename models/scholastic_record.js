@@ -144,7 +144,7 @@ const recordSchema = new mongoose.Schema({
   }
 });
 
-const ScholaticRecord = mongoose.model("Scholatic-Record", recordSchema);
+const ScholasticRecord = mongoose.model("Scholastic-Record", recordSchema);
 
 function validateRecord(record) {
   const schema = {
@@ -265,5 +265,38 @@ function validateRecord(record) {
   return Joi.validate(record, schema);
 }
 
-module.exports.ScholaticRecord = ScholaticRecord;
+function validateGradeRecord(gradeRecord) {
+  const schema = {
+    learning_area: Joi.string()
+      .required()
+      .trim()
+      .valid(
+        "Filipino",
+        "English",
+        "Mathematics",
+        "Science",
+        "Araling Panlipunan (AP)",
+        "Edukasyon sa Pagpapakatao (EsP)",
+        "Technology and Livelihood Education (TLE)",
+        "MAPEH",
+        "Music",
+        "Arts",
+        "Physical Education",
+        "Health"
+      ),
+    grade: Joi.number()
+      .min(0)
+      .max(100)
+      .integer()
+      .required(),
+    quarter: Joi.number()
+      .min(1)
+      .max(4)
+      .integer()
+      .required()
+  };
+  return Joi.validate(gradeRecord, schema);
+}
+module.exports.ScholasticRecord = ScholasticRecord;
 module.exports.validateScholasticRecord = validateRecord;
+module.exports.validateGradeRecord = validateGradeRecord;
