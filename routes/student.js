@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const _ = require("lodash");
 
 //Models
+const SystemLog = require("../models/log");
 const { Student, validateStudent } = require("../models/student");
 const { Teacher } = require("../models/teacher");
 const { Section } = require("../models/section");
@@ -23,7 +24,10 @@ router.get("/", async (req, res) => {
   const teacher = await Teacher.findById(req.user._id);
   //TODO: pass this logic to authorization middleware
   if (!teacher) {
-    return res.send("Looks like your account id is invalid");
+    const msg = `${req.user.name ||
+      "Unknown person"} cannot proceed becuase its accountid is not found in the database`;
+    await new SystemLog(SystemLog.createLog(req, res, msg)).save();
+    return res.status(400).send("Looks like your account id is invalid");
   }
 
   let yearNow = new Date().getFullYear();
@@ -72,7 +76,8 @@ router.get("/", async (req, res) => {
       section: section.number
     });
   });
-
+  const msg = `${req.user.name} queries all the students he/she currently handling`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(students);
 });
 
@@ -80,7 +85,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const { error } = validateStudent(req.body);
   if (error) return res.status(400).send("Bad request, invalid student object");
-
+  //TODO: checks if student lrn is in the list of enrolled
   const duplicateLrn = await Student.findOne({ lrn: req.body.lrn });
   if (duplicateLrn)
     return res.status(400).send("Bad request, lrn already registered");
@@ -93,9 +98,13 @@ router.post("/", async (req, res) => {
   });
   if (duplicateStudent)
     return res.status(400).send("Bad request, name already registered");
-
+  //TODO: set enrollee document dataProcessed: true
   const student = new Student(req.body);
   await student.save();
+  const msg = `${
+    req.user.name
+  } registers ${student.getFullName()} to the students database`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(student);
 });
 
@@ -108,6 +117,10 @@ router.get("/:id", async (req, res) => {
     return res
       .status(400)
       .send("Bad request, student with the given id cannot found");
+  const msg = `${
+    req.user.name
+  } queries ${student.getFullName()} full information`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(student);
 });
 
@@ -133,6 +146,9 @@ router.put("/:id", async (req, res) => {
     return res.status(400).send("Bad request, name already registered");
 
   const student = await Student.findByIdAndUpdate(req.params.id, req.body);
+
+  const msg = `${req.user.name} updates ${student.getFullName()} information`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(student);
 });
 
@@ -140,7 +156,8 @@ router.put("/:id", async (req, res) => {
 router.post("/:id", async (req, res) => {
   const { error } = validateScholasticRecord(req.body);
   if (error) return res.status(400).send("Bad request, invalid record object");
-
+  const owner = await Student.findById(req.params.id);
+  //TODO: send 400 if owner doesn't exist
   const duplicateRecord = await ScholasticRecord.findOne({
     owner_id: req.body.owner_id,
     "school.id": req.body.school.id,
@@ -154,6 +171,10 @@ router.post("/:id", async (req, res) => {
 
   const record = new ScholasticRecord(req.body);
   await record.save();
+  // const msg = `${
+  //   req.user.name
+  // } adds scholastic record to ${owner.getFullName()} sf10 data`;
+  // await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(record);
 });
 
@@ -161,9 +182,14 @@ router.post("/:id", async (req, res) => {
 router.put("/:id/:recordId", async (req, res) => {
   const { error } = validateScholasticRecord(req.body);
   if (error) return res.status(400).send("Bad request, invalid record object");
-
+  const owner = await Student.findById(req.params.id);
+  //TODO: send 400 if owner doesn't exist
   const duplicateRecord = await ScholasticRecord.findOne({
-    _id: { $not: { $eq: req.params.recordId } },
+    _id: {
+      $not: {
+        $eq: req.params.recordId
+      }
+    },
     owner_id: req.body.owner_id,
     "school.id": req.body.school.id,
     grade_level: req.body.grade_level,
@@ -178,6 +204,11 @@ router.put("/:id/:recordId", async (req, res) => {
     req.params.recordId,
     req.body
   );
+
+  // const msg = `${
+  //   req.user.name
+  // } edits one of the scholastic record of ${owner.getFullName()} sf10 data`;
+  // await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(record);
 });
 
@@ -197,7 +228,8 @@ router.post("/:id/grades", async (req, res) => {
   const { error } = validateGradeRecord(req.body);
   if (error)
     return res.status(400).send("Bad request, grade object is invalid");
-
+  const owner = await Student.findById(req.params.id);
+  //TODO: checks if owner exists
   let yearNow = new Date().getFullYear();
   const section = await Section.findOne({
     students: req.params.id,
@@ -218,8 +250,13 @@ router.post("/:id/grades", async (req, res) => {
       "subjects.learning_area": req.body.learning_area,
       "subjects.quarter_rating.3": { $exists: true }
     });
-    if (!prevRecord)
+    if (!prevRecord) {
+      const msg = `${
+        req.user.name
+      } cannot encode grade of ${owner.getFullName()} due to an incomplete sf10 data`;
+      await new SystemLog(SystemLog.createLog(req, res, msg)).save();
       return res.status(400).send("Bad request, cannot find previous records");
+    }
   }
 
   if (req.body.quarter > 1) {
@@ -261,6 +298,10 @@ router.post("/:id/grades", async (req, res) => {
         delete prevRecord.scholastic_status;
         record = new ScholasticRecord(prevRecord);
       } else {
+        const msg = `${
+          req.user.name
+        } cannot encode grade of ${owner.getFullName()} due to an incomplete grade on previous quarter(s)`;
+        await new SystemLog(SystemLog.createLog(req, res, msg)).save();
         return res
           .status(400)
           .send("Bad request, previous grades are not encoded yet");
@@ -305,6 +346,10 @@ router.post("/:id/grades", async (req, res) => {
   });
   record.subjects = subjects;
   await record.save();
+  const msg = `${req.user.name} encodes grade of ${owner.getFullName()} in ${
+    req.body.learning_area
+  }, Quarter-${req.body.quarter}`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(record);
 });
 
@@ -313,7 +358,8 @@ router.delete("/:id/grades", async (req, res) => {
   const { error } = validateGradeRecord(req.body);
   if (error)
     return res.status(400).send("Bad request, grade object is invalid");
-
+  const owner = await Student.findById(req.params.id);
+  //TODO: checks if owner exists
   let yearNow = new Date().getFullYear();
   const section = await Section.findOne({
     students: req.params.id,
@@ -340,7 +386,6 @@ router.delete("/:id/grades", async (req, res) => {
   const subject = record.subjects.find(subject => {
     return subject.learning_area == req.body.learning_area;
   });
-  console.log(subject.quarter_rating.length, req.body.quarter);
 
   if (subject.quarter_rating.length != req.body.quarter) {
     return res
@@ -356,6 +401,10 @@ router.delete("/:id/grades", async (req, res) => {
   });
   record.subjects = subjects;
   await record.save();
+  const msg = `${req.user.name} deletes grade of ${owner.getFullName()} in ${
+    req.body.learning_area
+  }, Quarter-${req.body.quarter}`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(record);
 });
 

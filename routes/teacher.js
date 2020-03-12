@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { Teacher, validateTeacher } = require("../models/teacher");
-
+const SystemLog = require("../models/log");
 router.get("/", async (req, res) => {
   res.status(200).send("req");
 });
@@ -29,6 +29,10 @@ router.post("/", async (req, res) => {
 
   const teacher = new Teacher(req.body);
   await teacher.save();
+  const msg = `${
+    req.user.name
+  } register ${teacher.fullname()} in teachers database`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(teacher);
 });
 router.get("/:id", async (req, res) => {

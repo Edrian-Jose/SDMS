@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { Section, validateSection } = require("../models/section");
 const { Enrollee } = require("../models/enrollee");
+const SystemLog = require("../models/log");
 const { asyncForEach } = require("../plugins/asyncArray");
 router.get("/", async (req, res) => {
   res.status(200).send("req");
@@ -45,6 +46,12 @@ router.post("/", async (req, res) => {
 
   const section = new Section(req.body);
   await section.save();
+  const msg = `${req.user.name} registers/creates the section ${
+    section.grade_level
+  }-${section.number} ${
+    section.name ? "(" + section.name + ")" : ""
+  } in sections database`;
+  await new SystemLog(SystemLog.createLog(req, res, msg)).save();
   res.send(section);
 });
 

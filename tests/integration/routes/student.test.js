@@ -1338,7 +1338,6 @@ describe("DELETE /api/students/:id/grades", () => {
       .delete(`/api/students/${student1._id.toHexString()}/grades`)
       .set("x-auth-token", token)
       .send(grade1);
-    console.log(res.text);
 
     const subject = res.body.subjects.find(subject => {
       return subject.learning_area == grade1.learning_area;

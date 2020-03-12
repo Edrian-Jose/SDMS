@@ -25,14 +25,14 @@ describe("Authentication", () => {
   });
 
   it("should return 401 if no token is provided", async () => {
-    const res = await request(server).get("/api/students");
+    const res = await request(server).get("/api/notices");
 
     expect(res.status).toBe(401);
   });
 
   it("should return 400 if token is invalid", async () => {
     const res = await request(server)
-      .get("/api/students")
+      .get("/api/notices")
       .set("x-auth-token", "dgsdsd");
 
     expect(res.status).toBe(400);
@@ -40,7 +40,7 @@ describe("Authentication", () => {
 
   it("should return 200 if token is valid", async () => {
     const res = await request(server)
-      .get("/api/students")
+      .get("/api/notices")
       .set("x-auth-token", token);
 
     expect(res.status).toBe(200);

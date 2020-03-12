@@ -54,6 +54,7 @@ const teacherSchema = new mongoose.Schema({
 teacherSchema.methods.generateAuthToken = function() {
   const unsignedObj = {
     _id: this._id,
+    name: this.fullname(),
     roles: this.assignments.map(assignment => {
       switch (assignment.category) {
         case "Adviser":
