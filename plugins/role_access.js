@@ -115,6 +115,11 @@ module.exports = [
     user_access: [false, false, true, false, true]
   },
   {
+    method: "GET",
+    path: /^\/api\/enroll\/(?:([^\/]+?))\/?$/i,
+    user_access: [false, false, true, false, true]
+  },
+  {
     method: "DELETE",
     path: /^\/api\/enroll\/(?:([^\/]+?))\/?$/i,
     user_access: [false, false, true, false, true]
@@ -167,6 +172,11 @@ module.exports = [
   {
     method: "GET",
     path: /^\/api\/logs\/(?:([^\/]+?))\/?$/i,
-    user_access: [false, false, false, false, true]
+    user_access: [true, true, true, true, true]
+  },
+  {
+    method: "DELETE",
+    path: /^\/api\/login\/(?:([^\/]+?))\/?$/i,
+    user_access: [true, true, true, true, true]
   }
 ];

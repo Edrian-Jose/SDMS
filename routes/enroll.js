@@ -4,8 +4,7 @@ const { Enrollee, validateEnrollee } = require("../models/enrollee");
 
 router.post("/", async (req, res) => {
   const { error } = validateEnrollee(req.body);
-  if (error)
-    return res.status(400).send("Bad request, object value is invalid");
+  if (error) return res.status(400).send(error.details[0].message);
 
   const enrolled = await Enrollee.findOne({ lrn: req.body.lrn });
 
@@ -14,6 +13,17 @@ router.post("/", async (req, res) => {
 
   const enrollee = new Enrollee(req.body);
   await enrollee.save();
+
+  res.send({
+    lrn: enrollee.lrn,
+    name: enrollee.getFullName(),
+    classification: enrollee.classification
+  });
+});
+
+router.get("/:lrn", async (req, res) => {
+  const enrollee = await Enrollee.findOne({ lrn: req.params.lrn });
+  if (!enrollee) return res.send(null);
   res.send(enrollee);
 });
 
@@ -25,7 +35,11 @@ router.delete("/:lrn", async (req, res) => {
       .send("Bad request, deleting enrollee is not enrolled");
 
   enrolled.remove();
-  res.send(enrolled);
+  res.send({
+    lrn: enrolled.lrn,
+    name: enrolled.getFullName(),
+    classification: enrolled.classification
+  });
 });
 
 module.exports = router;

@@ -43,6 +43,7 @@ router.post("/", async (req, res) => {
       .status(400)
       .send("Bad request, one of the section student(s) is already classified");
   }
+  //TODO: test if student is enrolled in the same grade level as the section it was classified
 
   const section = new Section(req.body);
   await section.save();
@@ -60,6 +61,9 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/:id/:studentId", async (req, res) => {
+  //test if student is enrolled in the section grade level
+  //test if students is not yet classified
+  //test if students is
   res.status(200).send("req");
 });
 

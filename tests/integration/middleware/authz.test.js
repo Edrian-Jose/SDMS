@@ -91,11 +91,11 @@ describe("Authorization", () => {
     expect(res.status).toBe(403);
   });
 
-  it("should return 200 if trying to login", async () => {
-    const res = await request(server).post("/api/login");
+  // it("should return 200 if trying to login", async () => {
+  //   const res = await request(server).post("/api/login");
 
-    expect(res.status).toBe(200);
-  });
+  //   expect(res.status).toBe(200);
+  // });
 
   // it("should return 200 if authorized", async () => {
   //   reqS = await reqS.map(req => {

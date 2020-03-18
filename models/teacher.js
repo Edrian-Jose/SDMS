@@ -54,7 +54,14 @@ const teacherSchema = new mongoose.Schema({
           "Curriculum Chairman"
         ],
         trim: true
-      }
+      },
+      grade_level: [
+        {
+          type: Number,
+          min: 7,
+          max: 10
+        }
+      ]
     }
   ]
 });
@@ -134,7 +141,16 @@ function validateTeacher(teacher) {
             "Registrar",
             "Admin",
             "Curriculum Chairman"
+          ),
+        grade_levels: Joi.array
+          .items(
+            Joi.number()
+              .required()
+              .min(7)
+              .max(10)
+              .integer()
           )
+          .optional()
       })
     )
   };

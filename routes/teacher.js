@@ -44,6 +44,7 @@ router.post("/", async (req, res) => {
   req.body.password = await bcrypt.hash(req.body.password, salt);
   const teacher = new Teacher(req.body);
   await teacher.save();
+  
   const msg = `${
     req.user.name
   } register ${teacher.fullname()} in teachers database`;

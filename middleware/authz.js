@@ -12,6 +12,7 @@ function getRouteConfig(req) {
 }
 module.exports.getRouteConfig = getRouteConfig;
 module.exports.authz = function(req, res, next) {
+  if (req.originalUrl === "/api/login") return next();
   try {
     const user = req.user;
     const config = getRouteConfig(req);

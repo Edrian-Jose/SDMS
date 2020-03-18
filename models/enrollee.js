@@ -14,19 +14,41 @@ const enrolleeSchema = new mongoose.Schema({
     }
   },
   name: {
-    last: uniqueString,
-    first: uniqueString,
-    middle: uniqueString,
+    last: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      minlength: 2
+    },
+    first: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      minlength: 2
+    },
+    middle: {
+      type: String,
+      uppercase: true,
+      trim: true,
+      minlength: 2
+    },
     extension: {
       type: String,
-      optional: true,
-      min: 3,
-      max: 3
+      optional: true
     }
   },
   classification: {
-    grade_level: Number,
-    section: Number
+    grade_level: {
+      type: Number,
+      required: true,
+      min: 7,
+      max: 10
+    },
+    section: {
+      type: Number,
+      min: 1,
+      max: 15
+    }
   },
   dataProcessed: {
     type: Boolean,
@@ -34,6 +56,15 @@ const enrolleeSchema = new mongoose.Schema({
     default: false
   }
 });
+
+enrolleeSchema.methods.getFullName = function() {
+  const last = (this.name.last ? this.name.last : this.name.middle) + ", ";
+  const first = this.name.first + " ";
+  const ext = this.name.ext ? this.name.ext + " " : "";
+  const middle =
+    (this.name.last && this.name.middle ? this.name.middle : "") + " ";
+  return last + first + ext + middle;
+};
 
 const Enrollee = mongoose.model("Enrollee", enrolleeSchema);
 
@@ -45,17 +76,31 @@ function validateEnrollee(enrollee) {
       .integer()
       .required(),
     name: Joi.object({
-      last: joi_string,
-      first: joi_string,
-      middle: joi_string,
-      extension: Joi.string()
-        .optional()
-        .length(3)
+      last: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2),
+      first: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2),
+      middle: Joi.string()
+        .uppercase()
+        .trim()
+        .min(2),
+      extension: Joi.string().optional()
     }),
     classification: Joi.object({
-      grade_level: Joi.number(),
+      grade_level: Joi.number()
+        .required()
+        .min(7)
+        .max(10)
+        .integer(),
       section: Joi.number()
-    }),
+        .min(1)
+        .max(15)
+        .integer()
+    }).with("section", "grade_level"),
     dataProcessed: Joi.boolean().default(false)
   };
   return Joi.validate(enrollee, schema);
