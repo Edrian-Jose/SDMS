@@ -142,7 +142,7 @@ function validateTeacher(teacher) {
             "Admin",
             "Curriculum Chairman"
           ),
-        grade_levels: Joi.array
+        grade_levels: Joi.array()
           .items(
             Joi.number()
               .required()

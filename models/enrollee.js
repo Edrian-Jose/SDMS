@@ -40,7 +40,6 @@ const enrolleeSchema = new mongoose.Schema({
   classification: {
     grade_level: {
       type: Number,
-      required: true,
       min: 7,
       max: 10
     },
@@ -92,7 +91,6 @@ function validateEnrollee(enrollee) {
     }),
     classification: Joi.object({
       grade_level: Joi.number()
-        .required()
         .min(7)
         .max(10)
         .integer(),
