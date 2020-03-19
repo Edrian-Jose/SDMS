@@ -1,0 +1,5 @@
+{
+  "jwtPrivateKey": "osmeña",
+  "admin": "iamadmin",
+  "db": "mongodb://localhost/sfautomate"
+}

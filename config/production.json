@@ -1,0 +1,7 @@
+
+{
+  "jwtPrivateKey": "osmeña",
+  "admin": "iamadmin",
+  "db": "mongodb+srv://sdms-alpha:iamsdms@cluster0-gowtk.mongodb.net/test?retryWrites=true&w=majority"
+}
+

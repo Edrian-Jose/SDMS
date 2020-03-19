@@ -1,0 +1,5 @@
+{
+  "deploymentDate": "2020-02-22T18:17:33+0000",
+  "jwtPrivateKey": "osmeña",
+  "db": "mongodb://localhost/sfautomate-test"
+}
