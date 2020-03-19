@@ -1,6 +1,6 @@
 const winston = require("winston");
 const config = require("config");
-require("winston-mongodb").MongoDB;
+// require("winston-mongodb").MongoDB;
 const { createLogger, format, transports } = winston;
 const { combine, timestamp, label, printf, colorize, simple } = format;
 // require('winston-mongodb');
@@ -32,14 +32,14 @@ module.exports = function() {
         level: "error",
         filename: "./logs/errors.log",
         handleExceptions: true
-      }),
-      new winston.transports.MongoDB({
-        db: config.get("db"),
-        level: "info",
-        options: {
-          useUnifiedTopology: true
-        }
       })
+      // new winston.transports.MongoDB({
+      //   db: config.get("db"),
+      //   level: "info",
+      //   options: {
+      //     useUnifiedTopology: true
+      //   }
+      // })
     ]
   });
 
