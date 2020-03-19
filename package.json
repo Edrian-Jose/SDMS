@@ -10,7 +10,7 @@
   "scripts": {
     "test": "jest --verbose --runInBand",
     "serve": "nodemon index.js",
-    "start": "node index.js"
+    "start": "set NODE_ENV=production&&node index"
   },
   "engines": {
     "node": "12.8.1"
