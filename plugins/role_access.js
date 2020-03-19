@@ -96,8 +96,28 @@ module.exports = [
   },
   {
     method: "POST",
-    path: /^\/api\/sections\/(?:([^\/]+?))\/(?:([^\/]+?))\/?$/i,
+    path: /^\/api\/sections\/(?:([^\/]+?))\/add\/?$/i,
     user_access: [false, false, true, false, true]
+  },
+  {
+    method: "POST",
+    path: /^\/api\/sections\/(?:([^\/]+?))\/adviser\/?$/i,
+    user_access: [false, false, false, false, true]
+  },
+  {
+    method: "POST",
+    path: /^\/api\/sections\/(?:([^\/]+?))\/teacher\/?$/i,
+    user_access: [false, false, false, false, true]
+  },
+  {
+    method: "DELETE",
+    path: /^\/api\/sections\/(?:([^\/]+?))\/adviser\/?$/i,
+    user_access: [false, false, false, false, true]
+  },
+  {
+    method: "DELETE",
+    path: /^\/api\/sections\/(?:([^\/]+?))\/teacher\/?$/i,
+    user_access: [false, false, false, false, true]
   },
   {
     method: "DELETE",
@@ -106,6 +126,11 @@ module.exports = [
   },
   {
     method: "DELETE",
+    path: /^\/api\/sections\/(?:([^\/]+?))\/?$/i,
+    user_access: [false, false, true, false, true]
+  },
+  {
+    method: "PUT",
     path: /^\/api\/sections\/(?:([^\/]+?))\/?$/i,
     user_access: [false, false, true, false, true]
   },
