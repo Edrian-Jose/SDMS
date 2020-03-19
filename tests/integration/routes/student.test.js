@@ -27,7 +27,7 @@ describe("POST /api/students", () => {
     };
 
     student = {
-      lrn: 1,
+      lrn: 3,
       name: {
         last: "Ferrer",
         first: "Edrian Jose",
@@ -82,7 +82,7 @@ describe("POST /api/students", () => {
   });
 
   it("should return 400 if lrn is already registered", async () => {
-    student.lrn = 1;
+    student.lrn = 3;
     token = new Teacher(teacher).generateAuthToken();
     const res = await request(server)
       .post("/api/students")

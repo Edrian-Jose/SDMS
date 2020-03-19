@@ -9,6 +9,7 @@ const SystemLog = require("../models/log");
 const { Student, validateStudent } = require("../models/student");
 const { Teacher } = require("../models/teacher");
 const { Section } = require("../models/section");
+const { Enrollee } = require("../models/enrollee");
 const {
   ScholasticRecord,
   validateScholasticRecord,
@@ -46,6 +47,25 @@ router.get("/", async (req, res) => {
     $or: [{ "school_year.end": yearNow }, { "school_year.end": yearNow + 1 }]
   });
 
+  const enrollees = [];
+  await asyncForEach(advisorySections, async section => {
+    if (section.isRegular) {
+      const enrolled = await Enrollee.find({
+        "classification.grade_level": section.grade_level,
+        "classification.section": section.number
+      });
+      enrolled.forEach(enrollee => {
+        enrollees.push({
+          _id: enrollee._id,
+          lrn: enrollee.lrn,
+          name: enrollee.getFullName(),
+          grade: section.grade_level,
+          section: section.number
+        });
+      });
+    }
+  });
+
   let handledSections = _.unionWith(
     chairmanSections,
     teachingSections,
@@ -64,14 +84,14 @@ router.get("/", async (req, res) => {
   });
 
   studentsId = removeDuplicateIds(studentsId);
-  const students = [];
+  const students = [...enrollees];
   await asyncForEach(studentsId, async id => {
     const document = await Student.findById(id);
     const section = await Section.findOne({ isRegular: true, students: id });
     students.push({
       _id: document._id,
       lrn: document.lrn,
-      fullname: document.getFullName(),
+      name: document.getFullName(),
       grade: section.grade_level,
       section: section.number
     });
