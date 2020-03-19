@@ -32,7 +32,7 @@ module.exports = function() {
         level: "error",
         filename: "./logs/errors.log",
         handleExceptions: true
-      })
+      }),
       new winston.transports.MongoDB({
         db: config.get("db"),
         level: "info",
