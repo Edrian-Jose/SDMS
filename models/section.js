@@ -30,8 +30,7 @@ const sectionSchema = new mongoose.Schema({
   name: {
     type: String,
     optional: true,
-    trim: true,
-    minlength: 2
+    trim: true
   },
   adviser_id: mongoose.Schema.Types.ObjectId,
   chairman_id: mongoose.Schema.Types.ObjectId,
@@ -81,8 +80,7 @@ function validateSection(section) {
       .max(15),
     name: Joi.string()
       .optional()
-      .trim()
-      .min(2),
+      .trim(),
     adviser_id: Joi.objectId(),
     chairman_id: Joi.objectId(),
     subject_teachers: Joi.array().items(

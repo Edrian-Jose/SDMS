@@ -18,6 +18,8 @@ module.exports.validateSectionsEdit = sec => {
       .max(15)
       .integer(),
     name: Joi.string()
+      .optional()
+      .allow(null, "")
   };
 
   return Joi.validate(sec, schema);

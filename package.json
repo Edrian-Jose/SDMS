@@ -8,9 +8,10 @@
   "description": "It is a system for student data management",
   "main": "index.js",
   "scripts": {
-    "test": "jest --verbose --runInBand",
+    "test": "set NODE_ENV=test&& jest --verbose --runInBand",
+    "coverage": "jest --verbose --runInBand --coverage",
     "serve": "nodemon index.js",
-    "start":"node index.js"
+    "start": "node index.js"
   },
   "engines": {
     "node": "12.8.1"

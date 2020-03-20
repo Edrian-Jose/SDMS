@@ -121,7 +121,6 @@ describe("GET /api/logs/:id", () => {
   it("should return 401 if unauthenticated", async () => {
     const res = await request(server).get(`/api/logs/${teacherDoc.body._id}`);
     expect(res.status).toBe(401);
-    console.log(res.text);
   });
 
   it("should return 200 if authorized", async () => {
@@ -130,7 +129,7 @@ describe("GET /api/logs/:id", () => {
     const res = await request(server)
       .get(`/api/logs/${teacherDoc.body._id}`)
       .set("x-auth-token", token);
-    console.log(res.text);
+
     expect(res.status).toBe(200);
   });
 
@@ -138,7 +137,7 @@ describe("GET /api/logs/:id", () => {
     const res = await request(server)
       .get(`/api/logs/${teacherDoc.body._id}`)
       .set("x-auth-token", token);
-    // console.log(res.text);
+    //
 
     expect(res.status).toBe(200);
   });

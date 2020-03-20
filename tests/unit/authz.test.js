@@ -22,7 +22,7 @@ describe("AuthZ getRouteConfig", () => {
       { method: "GET", path: "/api/sections" },
       { method: "POST", path: "/api/sections" },
       { method: "GET", path: "/api/sections/id" },
-      { method: "POST", path: "/api/sections/id/add" },
+      { method: "POST", path: "/api/sections/add" },
       { method: "DELETE", path: "/api/sections/id/:studentId" },
       { method: "DELETE", path: "/api/sections/id" },
       { method: "POST", path: "/api/enroll" },

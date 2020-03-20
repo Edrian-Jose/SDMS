@@ -96,7 +96,7 @@ module.exports = [
   },
   {
     method: "POST",
-    path: /^\/api\/sections\/(?:([^\/]+?))\/add\/?$/i,
+    path: /^\/api\/sections\/add\/?$/i,
     user_access: [false, false, true, false, true]
   },
   {
